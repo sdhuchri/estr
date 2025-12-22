@@ -10,14 +10,18 @@ import { getManualCabangTracking } from "@/services/manualCabang";
 import { Download } from "lucide-react";
 import { generatePDF, downloadPDF, formatDateToDDMMYYYY, PDFColumn } from "@/utils/pdfGenerator";
 import FadeInWrapper from "@/components/common/FadeInWrapper";
+import Modal from "@/components/common/Modal";
+import FormField, { Input, Textarea, TimeInput24 } from "@/components/common/FormField";
 
 interface TrackingData {
   NO: number;
   CABANG: string;
   CABANG_INDUK: string;
+  INDIKATOR: string;
   INPUT_BY_CBG: string;
   NAMA_NASABAH: string;
   NO_CIF: string;
+  NO_REK: string;
   OTOR_BY_CBG: string | null;
   OTOR_BY_KEP_OPR: string | null;
   OTOR_BY_KEP_SPV: string | null;
@@ -28,6 +32,15 @@ interface TrackingData {
   TANGGAL_OTOR_CSO: string | null;
   TANGGAL_OTOR_OPR_KEP: string | null;
   TANGGAL_OTOR_SPV_KEP: string | null;
+  JAM_HUB_NASABAH: string | null;
+  ALASAN_REJECT: string | null;
+  KETERANGAN: string;
+  KETERANGAN_STATUS: string;
+  KET_CABANG_OPR: string | null;
+  KET_CABANG_SPV: string | null;
+  KET_KEPATUHAN: string | null;
+  TGL_HUB_NASABAH: string | null;
+  TRANSAKSI_MENCURIGAKAN: string | null;
 }
 
 export default function ManualCabangTrackingClient() {
@@ -44,6 +57,10 @@ export default function ManualCabangTrackingClient() {
   const [filterTanggalAwal, setFilterTanggalAwal] = useState<Date | null>(null);
   const [filterTanggalAkhir, setFilterTanggalAkhir] = useState<Date | null>(null);
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+  // Modal state
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedData, setSelectedData] = useState<TrackingData | null>(null);
 
   // Fetch tracking data
   useEffect(() => {
@@ -96,11 +113,16 @@ export default function ManualCabangTrackingClient() {
   const statusOptions = [
     { value: "", label: "Semua Status" },
     { value: "Inputan Cabang OPR", label: "Inputan Cabang OPR" },
-    { value: "Otor Cabang SPV", label: "Otor Cabang SPV" },
-    { value: "Otor Kepatuhan OPR", label: "Otor Kepatuhan OPR" },
-    { value: "Otor Kepatuhan SPV", label: "Otor Kepatuhan SPV" },
-    { value: "Selesai", label: "Selesai" },
-    { value: "Reject", label: "Reject" }
+    { value: "Approval SPV Cabang", label: "Approval SPV Cabang" },
+    { value: "Approval OPR Kepatuhan", label: "Approval OPR Kepatuhan" },
+    { value: "Approval SPV Kepatuhan", label: "Approval SPV Kepatuhan" },
+    { value: "Selesai SPV Cabang", label: "Selesai SPV Cabang" },
+    { value: "Selesai OPR Kepatuhan", label: "Selesai OPR Kepatuhan" },
+    { value: "Selesai SPV Kepatuhan", label: "Selesai SPV Kepatuhan" },
+    { value: "Sendback SPV Cabang", label: "Sendback SPV Cabang" },
+    { value: "Sendback OPR Kepatuhan", label: "Sendback OPR Kepatuhan" },
+    { value: "Reject SPV Kepatuhan", label: "Reject SPV Kepatuhan" },
+    { value: "Reject 3 hari", label: "Reject 3 hari" }
   ];
 
   useEffect(() => {
@@ -149,6 +171,18 @@ export default function ManualCabangTrackingClient() {
     return `${user} - ${formatDate(date)}`;
   };
 
+  const handleRowAction = (action: string, item: TrackingData) => {
+    if (action === "view") {
+      setSelectedData(item);
+      setIsModalOpen(true);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedData(null);
+  };
+
   const handleDownloadPDF = async () => {
     if (filteredData.length === 0) {
       toast.current?.show({
@@ -171,8 +205,9 @@ export default function ManualCabangTrackingClient() {
       // Define PDF columns
       const pdfColumns: PDFColumn[] = [
         { header: "No", key: "NO", width: 35 },
-        { header: "No CIF", key: "NO_CIF", width: 80 },
-        { header: "Nama Nasabah", key: "NAMA_NASABAH", width: 110 },
+        { header: "Indikator", key: "INDIKATOR", width: 60 },
+        { header: "No CIF", key: "NO_CIF", width: 75 },
+        { header: "Nama Nasabah", key: "NAMA_NASABAH", width: 100 },
         { header: "Cabang", key: "CABANG", width: 90 },
         {
           header: "Tanggal",
@@ -270,6 +305,7 @@ export default function ManualCabangTrackingClient() {
       className: "text-center w-16",
       render: (_: any, __: any, rowNumber: number) => rowNumber
     },
+    { key: "INDIKATOR", label: "Indikator" },
     { key: "NO_CIF", label: "No CIF" },
     { key: "NAMA_NASABAH", label: "Nama Nasabah", className: "font-medium" },
     { key: "CABANG", label: "Cabang" },
@@ -305,11 +341,16 @@ export default function ManualCabangTrackingClient() {
       render: (value: string) => {
         const statusColors: Record<string, string> = {
           "Inputan Cabang OPR": "bg-blue-100 text-blue-800",
-          "Otor Cabang SPV": "bg-purple-100 text-purple-800",
-          "Otor Kepatuhan OPR": "bg-yellow-100 text-yellow-800",
-          "Otor Kepatuhan SPV": "bg-orange-100 text-orange-800",
-          "Selesai": "bg-green-100 text-green-800",
-          "Reject": "bg-red-100 text-red-800"
+          "Approval SPV Cabang": "bg-purple-100 text-purple-800",
+          "Approval OPR Kepatuhan": "bg-yellow-100 text-yellow-800",
+          "Approval SPV Kepatuhan": "bg-orange-100 text-orange-800",
+          "Selesai SPV Cabang": "bg-green-100 text-green-800",
+          "Selesai OPR Kepatuhan": "bg-green-100 text-green-800",
+          "Selesai SPV Kepatuhan": "bg-green-100 text-green-800",
+          "Sendback SPV Cabang": "bg-amber-100 text-amber-800",
+          "Sendback OPR Kepatuhan": "bg-amber-100 text-amber-800",
+          "Reject SPV Kepatuhan": "bg-red-100 text-red-800",
+          "Reject 3 hari": "bg-red-100 text-red-800"
         };
         return (
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[value] || "bg-gray-100 text-gray-800"}`}>
@@ -320,7 +361,17 @@ export default function ManualCabangTrackingClient() {
     }
   ];
 
+  // Define table actions
+  const actions = [
+    {
+      label: "Detail",
+      action: "view",
+      className: "bg-blue-500 hover:bg-blue-600 text-white"
+    }
+  ];
+
   const searchFields = [
+    "INDIKATOR",
     "NO_CIF",
     "NAMA_NASABAH",
     "CABANG",
@@ -331,6 +382,17 @@ export default function ManualCabangTrackingClient() {
     "OTOR_SPV_KEP_FORMATTED",
     "STATUS_TEXT"
   ];
+
+  const modalFooter = (
+    <div className="flex justify-start items-center w-full">
+      <button
+        onClick={handleCloseModal}
+        className="px-6 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-full font-medium"
+      >
+        Close
+      </button>
+    </div>
+  );
 
   return (
     <FadeInWrapper>
@@ -343,13 +405,22 @@ export default function ManualCabangTrackingClient() {
         .tracking-page-filters .listbox-button {
           border-radius: 0.75rem !important;
         }
+        .tracking-status-dropdown ul {
+          min-width: max-content !important;
+          width: auto !important;
+        }
+        .tracking-status-dropdown ul li span {
+          white-space: nowrap !important;
+        }
       `}</style>
 
         <div className="p-6">
           <DataTable
             data={filteredData}
             columns={columns}
+            actions={actions}
             searchFields={searchFields}
+            onRowAction={handleRowAction}
             loading={false}
             emptyMessage="Tidak ada data yang ditemukan"
             title="Tracking Manual Cabang"
@@ -370,13 +441,15 @@ export default function ManualCabangTrackingClient() {
                     className="w-44"
                   />
                 </div>
-                <CustomListbox
-                  value={filterStatus}
-                  onChange={(value) => setFilterStatus(value)}
-                  options={statusOptions}
-                  placeholder="Pilih status"
-                  className="w-44"
-                />
+                <div className="tracking-status-dropdown">
+                  <CustomListbox
+                    value={filterStatus}
+                    onChange={(value) => setFilterStatus(value)}
+                    options={statusOptions}
+                    placeholder="Pilih status"
+                    className="w-96"
+                  />
+                </div>
               </div>
             }
             searchRightActions={
@@ -391,6 +464,128 @@ export default function ManualCabangTrackingClient() {
             }
           />
         </div>
+
+        {/* Detail Modal */}
+        <Modal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          title="Detail Transaksi"
+          footer={modalFooter}
+          size="xl"
+        >
+          {selectedData && (
+            <>
+              {/* Green Info Box */}
+              <div className="bg-green-600 text-white p-4 rounded-lg mb-6">
+                <h3 className="text-lg font-semibold mb-3">Transaksi Tidak Mencurigakan!</h3>
+                <ol className="text-m space-y-1">
+                  <li>1. Nasabah dengan Produk Simpanan Pelajar (Simpel)</li>
+                  <li>2. Transaksi Pencairan dan Penempatan Deposito</li>
+                  <li>3. Transaksi Pencairan dan Pembayaran Pembiayaan</li>
+                  <li>4. Transaksi untuk Pengeluaran Rutin Pribadi</li>
+                  <li>5. Transaksi untuk Warisan</li>
+                  <li>6. Transaksi dengan Rekening <em>Payroll</em> Karyawan BCA Syariah</li>
+                  <li>7. Transaksi untuk Penjualan / Pembelian Rumah dan Kendaraan</li>
+                  <li>8. Lainnya</li>
+                </ol>
+              </div>
+
+              {/* Form Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <FormField label="No CIF">
+                  <Input value={selectedData.NO_CIF} disabled />
+                </FormField>
+                <FormField label="No Rekening">
+                  <Input value={selectedData.NO_REK} disabled />
+                </FormField>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <FormField label="Indikator">
+                  <Input value={selectedData.INDIKATOR} disabled />
+                </FormField>
+                <FormField label="Cabang">
+                  <Input value={selectedData.CABANG} disabled />
+                </FormField>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <FormField label="Nama Nasabah">
+                  <Input value={selectedData.NAMA_NASABAH} disabled />
+                </FormField>
+                <FormField label="Tanggal Transaksi">
+                  <Input value={formatDate(selectedData.TANGGAL_LAPORAN)} disabled />
+                </FormField>
+              </div>
+
+              <FormField label="Keterangan Indikator" className="mb-4">
+                <Input value={selectedData.KETERANGAN || "-"} disabled />
+              </FormField>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <FormField label="Tgl Menghubungi Nasabah">
+                  <Input 
+                    value={selectedData.TGL_HUB_NASABAH ? formatDate(selectedData.TGL_HUB_NASABAH) : "-"} 
+                    disabled 
+                  />
+                </FormField>
+                <FormField label="Jam Menghubungi Nasabah">
+                  <TimeInput24
+                    value={selectedData.JAM_HUB_NASABAH || "00:00:00"}
+                    onChange={() => {}}
+                    disabled
+                  />
+                </FormField>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <FormField label="Transaksi Mencurigakan">
+                  <Input 
+                    value={selectedData.TRANSAKSI_MENCURIGAKAN === "Y" ? "Ya" : selectedData.TRANSAKSI_MENCURIGAKAN === "T" ? "Tidak" : "-"} 
+                    disabled 
+                  />
+                </FormField>
+              </div>
+
+              <FormField label="Penjelasan CSO" className="mb-4">
+                <Textarea
+                  value={selectedData.KET_CABANG_OPR || "-"}
+                  onChange={() => {}}
+                  rows={4}
+                  disabled
+                />
+              </FormField>
+
+              <FormField label="Penjelasan SPV" className="mb-4">
+                <Textarea
+                  value={selectedData.KET_CABANG_SPV || "-"}
+                  onChange={() => {}}
+                  rows={4}
+                  disabled
+                />
+              </FormField>
+
+              <FormField label="Penjelasan Kepatuhan" className="mb-4">
+                <Textarea
+                  value={selectedData.KET_KEPATUHAN || "-"}
+                  onChange={() => {}}
+                  rows={4}
+                  disabled
+                />
+              </FormField>
+              {selectedData.KETERANGAN_STATUS == "Send Back" &&
+              <FormField label="Penjelasan Send Back" className="mb-4">
+                <Textarea
+                  value={selectedData.ALASAN_REJECT || "-"}
+                  onChange={() => {}}
+                  rows={4}
+                  disabled
+                />
+              </FormField> 
+              }
+            </>
+          )}
+        </Modal>
       </div>
     </FadeInWrapper>
   );

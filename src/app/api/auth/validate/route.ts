@@ -18,13 +18,13 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Validate session with backend
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://10.125.22.11:8080";
+    // Mock validation - always return valid for demo
+    // const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
 
-    const response = await fetch(`${backendUrl}/api/auth/validate-session`, {
+    const response = await fetch(`${backendUrl}/estr-api/auth/validate-session`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -37,6 +37,16 @@ interface DataTableProps {
   onCheckboxChange?: (id: string) => void;
   onSelectAll?: (checked: boolean) => void;
   getRowId?: (row: any) => string;
+  // Table scroll props
+  tableMinWidth?: string;
+  fixedCardWidth?: boolean; // If true, card stays fixed and only table scrolls
+  // Server-side pagination props
+  serverSidePagination?: boolean;
+  totalRecords?: number;
+  currentPage?: number;
+  onPageChange?: (page: number) => void;
+  onItemsPerPageChange?: (itemsPerPage: number) => void;
+  itemsPerPageValue?: number; // Controlled value for items per page
 }
 
 function DataTable({
@@ -48,6 +58,7 @@ function DataTable({
   itemsPerPageOptions = [10, 25, 50],
   defaultItemsPerPage = 10,
   onRowAction,
+  tableMinWidth,
   actions = [],
   loading = false,
   emptyMessage = "Tidak ada data yang ditemukan",
@@ -59,14 +70,31 @@ function DataTable({
   selectedRows = [],
   onCheckboxChange,
   onSelectAll,
-  getRowId = (row) => row.id || row.NO
+  getRowId = (row) => row.id || row.NO,
+  fixedCardWidth = false,
+  // Server-side pagination
+  serverSidePagination = false,
+  totalRecords = 0,
+  currentPage: externalCurrentPage,
+  onPageChange,
+  onItemsPerPageChange,
+  itemsPerPageValue
 }: DataTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredData, setFilteredData] = useState(data);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [internalCurrentPage, setInternalCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(defaultItemsPerPage);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  // Use external page if server-side pagination, otherwise use internal
+  const currentPage = serverSidePagination ? (externalCurrentPage || 1) : internalCurrentPage;
+
+  // Sync itemsPerPage with external value for server-side pagination
+  useEffect(() => {
+    if (serverSidePagination && itemsPerPageValue !== undefined) {
+      setItemsPerPage(itemsPerPageValue);
+    }
+  }, [serverSidePagination, itemsPerPageValue]);
 
   // Update filtered data when data changes
   useEffect(() => {
@@ -96,8 +124,10 @@ function DataTable({
 
   // Reset pagination only when search term changes
   useEffect(() => {
-    setCurrentPage(1);
-  }, [searchTerm]);
+    if (!serverSidePagination) {
+      setInternalCurrentPage(1);
+    }
+  }, [searchTerm, serverSidePagination]);
 
   // Handle page transition animation
   useEffect(() => {
@@ -109,11 +139,18 @@ function DataTable({
   }, [currentPage]);
 
   // Calculate pagination
-  const paginatedData = filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+  const paginatedData = serverSidePagination 
+    ? data // For server-side, data is already paginated
+    : filteredData.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+      );
+  
+  const totalPages = serverSidePagination
+    ? Math.ceil(totalRecords / itemsPerPage)
+    : Math.ceil(filteredData.length / itemsPerPage);
+
+  const displayedRecordsCount = serverSidePagination ? totalRecords : filteredData.length;
 
   const generatePagination = (current: number, total: number): (number | "...")[] => {
     const range: (number | "...")[] = [];
@@ -146,7 +183,7 @@ function DataTable({
           animation: fadeInSlide 0.3s ease-out forwards;
         }
       `}</style>
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+      <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${fixedCardWidth ? 'overflow-hidden' : ''}`}>
       {/* Header Section */}
       {(title || description || searchable || headerActions) && (
         <div className="p-6 border-b border-gray-200">
@@ -171,6 +208,7 @@ function DataTable({
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
+                    maxLength={255}
                   />
                 </div>
               )}
@@ -181,10 +219,9 @@ function DataTable({
       )}
 
       {/* Table Section */}
-      <div className="p-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
+      <div className={fixedCardWidth ? "p-6" : "p-6"}>
+        <div className={fixedCardWidth ? "overflow-x-auto w-full" : "overflow-x-auto"}>
+          <table className="w-full border-collapse" style={tableMinWidth ? { minWidth: tableMinWidth } : undefined}>
               <thead>
                 <tr style={{ backgroundColor: '#161950' }}>
                   {columns.map((column) => (
@@ -285,7 +322,6 @@ function DataTable({
               </tbody>
             </table>
           </div>
-        </div>
       </div>
 
       {/* Pagination Section */}
@@ -298,8 +334,13 @@ function DataTable({
                 <CustomListbox
                   value={itemsPerPage.toString()}
                   onChange={(value) => {
-                    setItemsPerPage(Number(value));
-                    setCurrentPage(1);
+                    const newItemsPerPage = Number(value);
+                    setItemsPerPage(newItemsPerPage);
+                    if (serverSidePagination) {
+                      onItemsPerPageChange?.(newItemsPerPage);
+                    } else {
+                      setInternalCurrentPage(1);
+                    }
                   }}
                   options={itemsPerPageOptions.map(option => ({
                     value: option.toString(),
@@ -315,13 +356,28 @@ function DataTable({
             {/* Data count info - centered */}
             <div className="flex-1 text-center">
               <span className="text-sm text-gray-700">
-                Menampilkan {paginatedData.length} dari {filteredData.length} data
+                {serverSidePagination ? (
+                  <>
+                    Menampilkan {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, totalRecords)} dari {totalRecords.toLocaleString()} data
+                  </>
+                ) : (
+                  <>
+                    Menampilkan {paginatedData.length} dari {filteredData.length} data
+                  </>
+                )}
               </span>
             </div>
 
             <div className="flex gap-2 relative">
               <button
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                onClick={() => {
+                  const newPage = Math.max(currentPage - 1, 1);
+                  if (serverSidePagination) {
+                    onPageChange?.(newPage);
+                  } else {
+                    setInternalCurrentPage(newPage);
+                  }
+                }}
                 disabled={currentPage === 1}
                 className="px-3 py-1 border rounded text-sm bg-white hover:bg-gray-100 disabled:opacity-50 transition-all duration-200"
               >
@@ -337,7 +393,14 @@ function DataTable({
                   ) : (
                     <button
                       key={`page-${page}`}
-                      onClick={() => setCurrentPage(Number(page))}
+                      onClick={() => {
+                        const newPage = Number(page);
+                        if (serverSidePagination) {
+                          onPageChange?.(newPage);
+                        } else {
+                          setInternalCurrentPage(newPage);
+                        }
+                      }}
                       className={`px-3 py-1 border rounded text-sm transition-all duration-300 ease-out ${
                         currentPage === page
                           ? "text-white border-gray-300 scale-110 shadow-md"
@@ -357,7 +420,14 @@ function DataTable({
               </div>
 
               <button
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                onClick={() => {
+                  const newPage = Math.min(currentPage + 1, totalPages);
+                  if (serverSidePagination) {
+                    onPageChange?.(newPage);
+                  } else {
+                    setInternalCurrentPage(newPage);
+                  }
+                }}
                 disabled={currentPage === totalPages}
                 className="px-3 py-1 border rounded text-sm bg-white hover:bg-gray-100 disabled:opacity-50 transition-all duration-200"
               >

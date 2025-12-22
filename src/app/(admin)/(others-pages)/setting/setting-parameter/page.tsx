@@ -130,7 +130,7 @@ async function SettingParameterData() {
     
     const response = await getParameterRedflag("1");
     if (response.status === "success" && response.data && response.data.length > 0) {
-      const apiData = response.data[0] as ParameterRedflagResponse;
+      const apiData = response.data[0] as any; // Type assertion for demo
 
       // Map API data to form state
       parameters = {
@@ -151,12 +151,12 @@ async function SettingParameterData() {
         jumlahHariExcludeIncome: apiData.EXCEED_INCOME_JML_HARI || "",
         nominalSetoran: formatNumber(apiData.TARIK_SETOR_NOMINAL_SETORAN || ""),
         nominalTarikan: formatNumber(apiData.TARIK_SETOR_NOMINAL_TARIKAN || ""),
-        filterCabang: apiData.TARIK_SETOR_NOMINAL_FILTER_CBG ? apiData.TARIK_SETOR_NOMINAL_FILTER_CBG.split(',').filter(v => v) : [],
+        filterCabang: apiData.TARIK_SETOR_NOMINAL_FILTER_CBG ? apiData.TARIK_SETOR_NOMINAL_FILTER_CBG.split(',').filter((v: string) => v) : [],
         deskripsiTransaksi: apiData.JUDOL_DESKRIPSI_TRANSAKSI || "",
         jumlahTransaksiDebit: formatNumber(apiData.JUDOL_JML_TRANSAKSI_DEBIT || ""),
         jumlahTransaksiKredit: formatNumber(apiData.JUDOL_JML_TRANSAKSI_KREDIT || ""),
         waktuJudol: apiData.JUDOL_WAKTU || "",
-        kategoriBlacklist: apiData.DB_SUSPECT_KATEGORI_BLACKLIST ? apiData.DB_SUSPECT_KATEGORI_BLACKLIST.split(',').filter(v => v) : [],
+        kategoriBlacklist: apiData.DB_SUSPECT_KATEGORI_BLACKLIST ? apiData.DB_SUSPECT_KATEGORI_BLACKLIST.split(',').filter((v: string) => v) : [],
         keywordKeterangan: apiData.DB_SUSPECT_KEYWORD_KETERANGAN || ""
       };
     }

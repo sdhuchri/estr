@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import React, { useState, useRef } from "react";
 import DataTable from "@/components/common/DataTable";
 import Modal from "@/components/common/Modal";
 import FormField, { Input, CustomListbox, Textarea, TimeInput24 } from "@/components/common/FormField";
@@ -47,10 +47,14 @@ interface ListRejectSupervisorClientProps {
 
 export default function ListRejectSupervisorClient({ initialData }: ListRejectSupervisorClientProps) {
   const [data, setData] = useState<ListRejectData[]>(initialData);
+  const [filteredData, setFilteredData] = useState<ListRejectData[]>(initialData);
   const toast = useRef<Toast>(null);
   const [isActivating, setIsActivating] = useState(false);
   const [isBulkActivating, setIsBulkActivating] = useState(false);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
+
+  // Date filter state
+  const [filterDate, setFilterDate] = useState<Date | null>(null);
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -66,18 +70,51 @@ export default function ListRejectSupervisorClient({ initialData }: ListRejectSu
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
   const [isBulkConfirmDialogOpen, setIsBulkConfirmDialogOpen] = useState(false);
 
+  // Filter data by date
+  React.useEffect(() => {
+    if (!filterDate) {
+      setFilteredData(data);
+      return;
+    }
+
+    const filtered = data.filter(item => {
+      const itemDate = new Date(item.TANGGAL_LAPORAN);
+      const filterDateOnly = new Date(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate());
+      const itemDateOnly = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
+
+      return itemDateOnly.getTime() === filterDateOnly.getTime();
+    });
+
+    setFilteredData(filtered);
+  }, [filterDate, data]);
+
   const formatDate = (dateString: string) => {
     if (!dateString || dateString === "1970-01-01") return "-";
-    return new Date(dateString).toLocaleDateString("id-ID");
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = date.toLocaleDateString("en-US", { month: "short" });
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
   };
+
+  // Add formatted date to data for search
+  const dataWithFormattedDate = React.useMemo(() => {
+    return filteredData.map(item => ({
+      ...item,
+      TANGGAL_FORMATTED: formatDate(item.TANGGAL_LAPORAN)
+    }));
+  }, [filteredData]);
 
   const handleRowAction = (action: string, item: ListRejectData) => {
     if (action === "view") {
       setSelectedData(item);
+      // Map Y/T to Ya/Tidak
+      const transaksiMencurigakan = item.TRANSAKSI_MENCURIGAKAN === "Y" ? "Ya" : item.TRANSAKSI_MENCURIGAKAN === "T" ? "Tidak" : "Tidak";
+      
       setEditFormData({
         tglHubungiNasabah: item.TGL_HUB_NASABAH ? new Date(item.TGL_HUB_NASABAH) : null,
         jamHubungiNasabah: item.JAM_HUB_NASABAH || "00:00:00",
-        transaksiMencurigakan: item.TRANSAKSI_MENCURIGAKAN || "Tidak",
+        transaksiMencurigakan: transaksiMencurigakan,
         penjelasanCSO: item.KET_CABANG_OPR || ""
       });
       setIsModalOpen(true);
@@ -217,7 +254,7 @@ export default function ListRejectSupervisorClient({ initialData }: ListRejectSu
       key: "NO",
       label: "No",
       className: "text-center",
-      render: (_: any, __: any, index: number) => index + 1
+      render: (_: any, __: any, index: number) => index
     },
     {
       key: "INDIKATOR",
@@ -266,8 +303,8 @@ export default function ListRejectSupervisorClient({ initialData }: ListRejectSu
     }
   ];
 
-  // Define search fields
-  const searchFields = ["NAMA_NASABAH", "NO_CIF", "INDIKATOR", "CABANG", "REJECT_BY"];
+  // Define search fields - include formatted date for search
+  const searchFields = ["NAMA_NASABAH", "NO_CIF", "INDIKATOR", "CABANG", "REJECT_BY", "TANGGAL_FORMATTED"];
 
   const modalFooter = (
     <div className="flex justify-between items-center w-full">
@@ -325,7 +362,7 @@ export default function ListRejectSupervisorClient({ initialData }: ListRejectSu
       <div className="min-h-screen bg-gray-50">
         <div className="p-6">
           <DataTable
-          data={data}
+          data={dataWithFormattedDate}
           columns={columns}
           actions={actions}
           searchFields={searchFields}
@@ -338,6 +375,27 @@ export default function ListRejectSupervisorClient({ initialData }: ListRejectSu
           onCheckboxChange={handleCheckboxChange}
           onSelectAll={handleSelectAll}
           getRowId={(row) => row.NO}
+          headerActions={
+            <div className="flex gap-2">
+              <div className="flex items-center gap-2">
+                <TailwindDatePicker
+                  value={filterDate}
+                  onChange={(date) => setFilterDate(date)}
+                  placeholder="Periode"
+                  className="w-44"
+                  roundedClass="rounded-lg"
+                />
+                {filterDate && (
+                  <button
+                    onClick={() => setFilterDate(null)}
+                    className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    Reset
+                  </button>
+                )}
+              </div>
+            </div>
+          }
           searchRightActions={
             <button
               onClick={handleBulkAktifkanClick}

@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "@/hooks/useSession";
 import DataTable from "@/components/common/DataTable";
 import Modal from "@/components/common/Modal";
 import FormField, { Input, CustomListbox, Textarea, TimeInput24 } from "@/components/common/FormField";
@@ -8,7 +9,7 @@ import TailwindDatePicker from "@/components/common/TailwindDatePicker";
 import { Toast } from "primereact/toast";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import { otorisasiManualKep } from "@/services/manualKep";
-import { sendMultipleEmails, DEFAULT_EMAIL_RECIPIENTS } from "@/services/emailQueue";
+import { sendEmailNotification } from "@/services/emailQueue";
 
 interface ManualKepOperatorData {
   NO: string;
@@ -48,6 +49,7 @@ interface ManualKepOperatorClientProps {
 
 export default function ManualKepOperatorClient({ initialData }: ManualKepOperatorClientProps) {
   const router = useRouter();
+  const { session } = useSession();
   const toast = useRef<Toast>(null);
   const [data, setData] = useState<ManualKepOperatorData[]>(initialData);
   const [isSaving, setIsSaving] = useState(false);
@@ -141,7 +143,7 @@ export default function ManualKepOperatorClient({ initialData }: ManualKepOperat
   };
 
   const performAction = async (action: "approve" | "reject" | "simpan") => {
-    if (!selectedData) return;
+    if (!selectedData || !session?.userId) return;
 
     setIsSaving(true);
 
@@ -150,26 +152,26 @@ export default function ManualKepOperatorClient({ initialData }: ManualKepOperat
         no: selectedData.NO,
         ket_kepatuhan: editFormData.penjelasanKepatuhan,
         action: action,
-        otor_by_kep_opr: "USER123" // TODO: Get from session
+        otor_by_kep_opr: session.userId
       };
 
       const response = await otorisasiManualKep(payload);
 
       if (response.status === "success") {
-        // Send email notifications after successful action
+        // Send email notification after successful action
         try {
           let emailAction = "manual_kep_operator_save";
           if (action === "approve") emailAction = "manual_kep_operator_approve";
           if (action === "reject") emailAction = "manual_kep_operator_reject";
           
-          await sendMultipleEmails(
-            DEFAULT_EMAIL_RECIPIENTS,
+          await sendEmailNotification(
             emailAction,
-            "USER123" // TODO: Get from session
+            session.userId,
+            session.branchCode || ""
           );
-          console.log(`Email notifications queued successfully for ${action}`);
+          console.log(`Email notification queued successfully for ${action}`);
         } catch (emailError) {
-          console.error("Error queuing emails:", emailError);
+          console.error("Error queuing email:", emailError);
           // Don't show error to user, just log it
         }
 
@@ -271,12 +273,12 @@ export default function ManualKepOperatorClient({ initialData }: ManualKepOperat
         <button
           onClick={handleReject}
           disabled={isSaving}
-          className="px-6 py-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white rounded-full font-medium flex items-center gap-2"
+          className="px-6 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white rounded-full font-medium flex items-center gap-2"
         >
           {isSaving && confirmAction === "reject" && (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           )}
-          Reject
+          Send Back
         </button>
         <button
           onClick={handleSave}
@@ -311,9 +313,9 @@ export default function ManualKepOperatorClient({ initialData }: ManualKepOperat
         isOpen={showConfirm}
         onClose={() => setShowConfirm(false)}
         onConfirm={handleConfirm}
-        title={confirmAction === "approve" ? "Konfirmasi Approve" : confirmAction === "reject" ? "Konfirmasi Reject" : "Konfirmasi Simpan"}
-        message={confirmAction === "approve" ? "Apakah Anda yakin ingin approve data ini?" : confirmAction === "reject" ? "Apakah Anda yakin ingin reject data ini?" : "Apakah Anda yakin ingin menyimpan data ini?"}
-        confirmLabel={confirmAction === "approve" ? "Ya, Approve" : confirmAction === "reject" ? "Ya, Reject" : "Ya, Simpan"}
+        title={confirmAction === "approve" ? "Konfirmasi Approve" : confirmAction === "reject" ? "Konfirmasi Send Back" : "Konfirmasi Simpan"}
+        message={confirmAction === "approve" ? "Apakah Anda yakin ingin approve data ini?" : confirmAction === "reject" ? "Apakah Anda yakin ingin send back data ini?" : "Apakah Anda yakin ingin menyimpan data ini?"}
+        confirmLabel={confirmAction === "approve" ? "Ya, Approve" : confirmAction === "reject" ? "Ya, Send Back" : "Ya, Simpan"}
         cancelLabel="Batal"
         variant={confirmAction === "reject" ? "danger" : "default"}
       />
@@ -384,7 +386,7 @@ export default function ManualKepOperatorClient({ initialData }: ManualKepOperat
               </FormField>
             </div>
 
-            <FormField label="Keterangan" className="mb-4">
+            <FormField label="Keterangan Indikator" className="mb-4">
               <Input value={selectedData.KETERANGAN} disabled />
             </FormField>
 
@@ -427,6 +429,7 @@ export default function ManualKepOperatorClient({ initialData }: ManualKepOperat
                 onChange={(e) => handleInputChange('penjelasanCSO', e.target.value)}
                 rows={4}
                 placeholder="Masukkan penjelasan..."
+                maxLength={999}
                 disabled
               />
             </FormField>
@@ -437,6 +440,7 @@ export default function ManualKepOperatorClient({ initialData }: ManualKepOperat
                 onChange={(e) => handleInputChange('penjelasanSPV', e.target.value)}
                 rows={4}
                 placeholder="Masukkan penjelasan..."
+                maxLength={999}
                 disabled
               />
             </FormField>
@@ -447,6 +451,7 @@ export default function ManualKepOperatorClient({ initialData }: ManualKepOperat
                 onChange={(e) => handleInputChange('penjelasanKepatuhan', e.target.value)}
                 rows={4}
                 placeholder="Masukkan penjelasan..."
+                maxLength={999}
               />
             </FormField>
           </>

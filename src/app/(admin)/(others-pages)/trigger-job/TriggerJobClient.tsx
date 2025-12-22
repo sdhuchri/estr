@@ -4,7 +4,7 @@ import FadeInWrapper from "@/components/common/FadeInWrapper";
 import FormField, { CustomListbox } from "@/components/common/FormField";
 import TailwindDatePicker from "@/components/common/TailwindDatePicker";
 import { Toast } from "primereact/toast";
-import { triggerSingleJob, triggerAllJobs, getJobLogs, getJobLogContent, deleteAllJobLogs } from "@/services/triggerJob";
+import { triggerSingleJob, triggerAllJobs, getJobLogs, getJobLogContent, deleteAllJobLogs, triggerUpdateStatusReject } from "@/services/triggerJob";
 import { Play, PlayCircle, FileText, RefreshCw, Trash2 } from "lucide-react";
 import Modal from "@/components/common/Modal";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
@@ -26,7 +26,7 @@ const JOB_LIST = [
   { value: "Job14_TarikSetor", label: "Job14 - Tarik Setor" },
   { value: "Job15_JUDOL", label: "Job15 - JUDOL" },
   { value: "Job16_DB_SUSPECT", label: "Job16 - DB SUSPECT" },
-  { value: "Job17_DB_TERORSIS", label: "Job17 - DB TERORSIS" },
+  { value: "Job17_DB_TERORIS", label: "Job17 - DB TERORSIS" },
   { value: "Job18_TRF_SUSPECT", label: "Job18 - TRF SUSPECT" }
 ];
 
@@ -36,6 +36,7 @@ export default function TriggerJobClient() {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [isTriggeringSingle, setIsTriggeringSingle] = useState(false);
   const [isTriggeringAll, setIsTriggeringAll] = useState(false);
+  const [isTriggeringUpdateStatus, setIsTriggeringUpdateStatus] = useState(false);
   
   // Log viewer state
   interface LogFile {
@@ -308,6 +309,40 @@ export default function TriggerJobClient() {
     }
   };
 
+  const handleTriggerUpdateStatusReject = async () => {
+    setIsTriggeringUpdateStatus(true);
+    
+    try {
+      const response = await triggerUpdateStatusReject();
+
+      if (response.status === "success") {
+        toast.current?.show({
+          severity: "success",
+          summary: "Berhasil!",
+          detail: response.message || "Job Update Status Reject berhasil dijalankan!",
+          life: 5000
+        });
+      } else {
+        toast.current?.show({
+          severity: "error",
+          summary: "Gagal!",
+          detail: response.message || "Gagal menjalankan job!",
+          life: 5000
+        });
+      }
+    } catch (error) {
+      console.error("Error triggering update status reject:", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Gagal!",
+        detail: "Terjadi kesalahan saat menjalankan job!",
+        life: 3000
+      });
+    } finally {
+      setIsTriggeringUpdateStatus(false);
+    }
+  };
+
   return (
     <FadeInWrapper>
       <style jsx global>{`
@@ -369,41 +404,62 @@ export default function TriggerJobClient() {
                   </FormField>
 
                   {/* Action Buttons */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4">
-                    {/* Trigger Single Job */}
-                    <button
-                      onClick={handleTriggerSingle}
-                      disabled={isTriggeringSingle || !selectedJob || !selectedDate}
-                      className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors shadow-lg"
-                    >
-                      {isTriggeringSingle ? (
-                        <>
-                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Menjalankan Job...
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-5 h-5" />
-                          Jalankan Job Terpilih
-                        </>
-                      )}
-                    </button>
+                  <div className="space-y-4 pt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {/* Trigger Single Job */}
+                      <button
+                        onClick={handleTriggerSingle}
+                        disabled={isTriggeringSingle || !selectedJob || !selectedDate}
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white rounded-lg font-medium transition-colors shadow-lg"
+                      >
+                        {isTriggeringSingle ? (
+                          <>
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Menjalankan Job...
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-5 h-5" />
+                            Jalankan Job Terpilih
+                          </>
+                        )}
+                      </button>
 
-                    {/* Trigger All Jobs */}
+                      {/* Trigger All Jobs */}
+                      <button
+                        onClick={handleTriggerAll}
+                        disabled={isTriggeringAll || !selectedDate}
+                        className="flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white rounded-lg font-medium transition-colors shadow-lg"
+                      >
+                        {isTriggeringAll ? (
+                          <>
+                            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Menjalankan Semua Job...
+                          </>
+                        ) : (
+                          <>
+                            <PlayCircle className="w-5 h-5" />
+                            Jalankan Semua Job
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    {/* Trigger Update Status Reject - Full Width */}
                     <button
-                      onClick={handleTriggerAll}
-                      disabled={isTriggeringAll || !selectedDate}
-                      className="flex items-center justify-center gap-2 px-6 py-3 bg-green-600 hover:bg-green-700 disabled:bg-green-300 text-white rounded-lg font-medium transition-colors shadow-lg"
+                      onClick={handleTriggerUpdateStatusReject}
+                      disabled={isTriggeringUpdateStatus}
+                      className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-orange-600 hover:bg-orange-700 disabled:bg-orange-300 text-white rounded-lg font-medium transition-colors shadow-lg"
                     >
-                      {isTriggeringAll ? (
+                      {isTriggeringUpdateStatus ? (
                         <>
                           <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Menjalankan Semua Job...
+                          Menonaktifkan Task...
                         </>
                       ) : (
                         <>
-                          <PlayCircle className="w-5 h-5" />
-                          Jalankan Semua Job
+                          <RefreshCw className="w-5 h-5" />
+                          Non-Aktifkan Task
                         </>
                       )}
                     </button>
@@ -417,6 +473,7 @@ export default function TriggerJobClient() {
                       <li>Menu ini digunakan untuk trigger manual job dengan memilih tanggal tertentu</li>
                       <li>Klik "Jalankan Job Terpilih" untuk menjalankan satu job</li>
                       <li>Klik "Jalankan Semua Job" untuk menjalankan semua 18 job secara bersamaan</li>
+                      <li><strong className="text-orange-700">Klik "Nonaktifkan Task"</strong> untuk menonaktifkan semua task sesuai HK</li>
                       <li>Proses mungkin memakan waktu beberapa saat tergantung volume data</li>
                       <li>Log hasil eksekusi dapat dilihat di bagian "Log Files Hari Ini"</li>
                       <li><strong>Job Progress Tracker</strong> akan muncul di pojok kanan bawah untuk menampilkan progress real-time</li>

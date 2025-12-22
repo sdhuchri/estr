@@ -136,13 +136,9 @@ export default function SignInForm() {
           href="/"
           className="absolute top-6 left-6 inline-flex items-center text-sm text-gray-500 transition-colors hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300"
         >
-          <Image
-            width={250}
-            height={100}
-            src="/estr/images/logo/BCA_Syariah_logo.png"
-            alt="BCA Syariah Logo"
-            priority
-          />
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+            Logo
+          </div>
         </Link>
 
         {/* Login Form */}

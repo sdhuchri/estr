@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import React, { useState } from "react";
 import DataTable from "@/components/common/DataTable";
 import Modal from "@/components/common/Modal";
 import FormField, { Input, CustomListbox, Textarea, TimeInput24 } from "@/components/common/FormField";
@@ -44,6 +44,10 @@ interface ListRejectOperatorClientProps {
 
 export default function ListRejectOperatorClient({ initialData }: ListRejectOperatorClientProps) {
   const [data] = useState<ListRejectData[]>(initialData);
+  const [filteredData, setFilteredData] = useState<ListRejectData[]>(initialData);
+
+  // Date filter state
+  const [filterDate, setFilterDate] = useState<Date | null>(null);
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,18 +59,51 @@ export default function ListRejectOperatorClient({ initialData }: ListRejectOper
     penjelasanCSO: ""
   });
 
+  // Filter data by date
+  React.useEffect(() => {
+    if (!filterDate) {
+      setFilteredData(initialData);
+      return;
+    }
+
+    const filtered = initialData.filter(item => {
+      const itemDate = new Date(item.TANGGAL_LAPORAN);
+      const filterDateOnly = new Date(filterDate.getFullYear(), filterDate.getMonth(), filterDate.getDate());
+      const itemDateOnly = new Date(itemDate.getFullYear(), itemDate.getMonth(), itemDate.getDate());
+
+      return itemDateOnly.getTime() === filterDateOnly.getTime();
+    });
+
+    setFilteredData(filtered);
+  }, [filterDate, initialData]);
+
   const formatDate = (dateString: string) => {
     if (!dateString || dateString === "1970-01-01") return "-";
-    return new Date(dateString).toLocaleDateString("id-ID");
+    const date = new Date(dateString);
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = date.toLocaleDateString("en-US", { month: "short" });
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
   };
+
+  // Add formatted date to data for search
+  const dataWithFormattedDate = React.useMemo(() => {
+    return filteredData.map(item => ({
+      ...item,
+      TANGGAL_FORMATTED: formatDate(item.TANGGAL_LAPORAN)
+    }));
+  }, [filteredData]);
 
   const handleRowAction = (action: string, item: ListRejectData) => {
     if (action === "view") {
       setSelectedData(item);
+      // Map Y/T to Ya/Tidak
+      const transaksiMencurigakan = item.TRANSAKSI_MENCURIGAKAN === "Y" ? "Ya" : item.TRANSAKSI_MENCURIGAKAN === "T" ? "Tidak" : "Tidak";
+      
       setEditFormData({
         tglHubungiNasabah: item.TGL_HUB_NASABAH ? new Date(item.TGL_HUB_NASABAH) : null,
         jamHubungiNasabah: item.JAM_HUB_NASABAH || "00:00:00",
-        transaksiMencurigakan: item.TRANSAKSI_MENCURIGAKAN || "Tidak",
+        transaksiMencurigakan: transaksiMencurigakan,
         penjelasanCSO: item.KET_CABANG_OPR || ""
       });
       setIsModalOpen(true);
@@ -140,8 +177,8 @@ export default function ListRejectOperatorClient({ initialData }: ListRejectOper
     }
   ];
 
-  // Define search fields
-  const searchFields = ["NAMA_NASABAH", "NO_CIF", "INDIKATOR", "CABANG", "REJECT_BY"];
+  // Define search fields - include formatted date for search
+  const searchFields = ["NAMA_NASABAH", "NO_CIF", "INDIKATOR", "CABANG", "REJECT_BY", "TANGGAL_FORMATTED"];
 
   const modalFooter = (
     <div className="flex justify-between items-center w-full">
@@ -160,7 +197,7 @@ export default function ListRejectOperatorClient({ initialData }: ListRejectOper
       <div className="min-h-screen bg-gray-50">
         <div className="p-6">
           <DataTable
-            data={data}
+            data={dataWithFormattedDate}
             columns={columns}
             actions={actions}
             searchFields={searchFields}
@@ -168,6 +205,27 @@ export default function ListRejectOperatorClient({ initialData }: ListRejectOper
             emptyMessage="Tidak ada data yang ditemukan"
             title="List Reject Operator"
             description="Kelola data laporan yang direject"
+            headerActions={
+              <div className="flex gap-2">
+                <div className="flex items-center gap-2">
+                  <TailwindDatePicker
+                    value={filterDate}
+                    onChange={(date) => setFilterDate(date)}
+                    placeholder="Periode"
+                    className="w-44"
+                    roundedClass="rounded-lg"
+                  />
+                  {filterDate && (
+                    <button
+                      onClick={() => setFilterDate(null)}
+                      className="px-3 py-2 text-sm text-gray-600 hover:text-gray-800 border border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
+                      Reset
+                    </button>
+                  )}
+                </div>
+              </div>
+            }
           />
         </div>
 
@@ -234,6 +292,7 @@ export default function ListRejectOperatorClient({ initialData }: ListRejectOper
                     value={editFormData.tglHubungiNasabah}
                     onChange={(date) => handleInputChange('tglHubungiNasabah', date)}
                     placeholder="Pilih tanggal"
+                    disabled
                   />
                   <p className="text-xs text-gray-500 mt-1">Format: dd-mmm-yyyy</p>
                 </FormField>
@@ -241,6 +300,7 @@ export default function ListRejectOperatorClient({ initialData }: ListRejectOper
                   <TimeInput24
                     value={editFormData.jamHubungiNasabah}
                     onChange={(time) => handleInputChange('jamHubungiNasabah', time)}
+                    disabled
                   />
                 </FormField>
               </div>
@@ -255,6 +315,7 @@ export default function ListRejectOperatorClient({ initialData }: ListRejectOper
                       { value: "Ya", label: "Ya" }
                     ]}
                     placeholder="Pilih status"
+                    disabled
                   />
                 </FormField>
               </div>
@@ -265,6 +326,7 @@ export default function ListRejectOperatorClient({ initialData }: ListRejectOper
                   onChange={(e) => handleInputChange('penjelasanCSO', e.target.value)}
                   rows={4}
                   placeholder="Masukkan penjelasan..."
+                  disabled
                 />
               </FormField>
 

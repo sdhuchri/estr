@@ -14,7 +14,9 @@ interface PieChartProps {
 }
 
 export default function PieChart({ data, size = 200, showLegend = true }: PieChartProps) {
-  const total = data.reduce((sum, item) => sum + item.value, 0);
+  // Filter out items with zero values
+  const filteredData = data.filter(item => item.value > 0);
+  const total = filteredData.reduce((sum, item) => sum + item.value, 0);
   
   if (total === 0) {
     return (
@@ -29,7 +31,7 @@ export default function PieChart({ data, size = 200, showLegend = true }: PieCha
   const centerX = radius;
   const centerY = radius;
 
-  const segments = data.map((item) => {
+  const segments = filteredData.map((item) => {
     const percentage = (item.value / total) * 100;
     const angle = (percentage / 100) * 360;
     const startAngle = currentAngle;
@@ -46,12 +48,28 @@ export default function PieChart({ data, size = 200, showLegend = true }: PieCha
 
     const largeArcFlag = angle > 180 ? 1 : 0;
 
-    const pathData = [
-      `M ${centerX} ${centerY}`,
-      `L ${x1} ${y1}`,
-      `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
-      "Z",
-    ].join(" ");
+    // Special handling for near-complete circles (>= 99.9%)
+    let pathData;
+    if (angle >= 359.9) {
+      // Draw a full circle using two arcs
+      const midRad = (startAngle + 180) * Math.PI / 180;
+      const xMid = centerX + radius * Math.cos(midRad);
+      const yMid = centerY + radius * Math.sin(midRad);
+      pathData = [
+        `M ${centerX} ${centerY}`,
+        `L ${x1} ${y1}`,
+        `A ${radius} ${radius} 0 1 1 ${xMid} ${yMid}`,
+        `A ${radius} ${radius} 0 1 1 ${x1} ${y1}`,
+        "Z",
+      ].join(" ");
+    } else {
+      pathData = [
+        `M ${centerX} ${centerY}`,
+        `L ${x1} ${y1}`,
+        `A ${radius} ${radius} 0 ${largeArcFlag} 1 ${x2} ${y2}`,
+        "Z",
+      ].join(" ");
+    }
 
     // Calculate label position (middle of the slice)
     const labelAngle = startAngle + angle / 2;
@@ -67,9 +85,10 @@ export default function PieChart({ data, size = 200, showLegend = true }: PieCha
       color: item.color,
       label: item.label,
       value: item.value,
-      percentage: percentage.toFixed(1),
+      percentage: percentage.toFixed(2),
       labelX,
       labelY,
+      isFullCircle: angle >= 359.9,
     };
   });
 
@@ -79,14 +98,24 @@ export default function PieChart({ data, size = 200, showLegend = true }: PieCha
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
         {segments.map((segment, index) => (
           <g key={index}>
-            {/* Pie slice */}
-            <path
-              d={segment.pathData}
-              fill={segment.color}
-              stroke="white"
-              strokeWidth="2"
-              className="transition-all duration-300 hover:opacity-80 cursor-pointer"
-            />
+            {/* Pie slice - use circle for 100%, path for others */}
+            {segment.isFullCircle ? (
+              <circle
+                cx={centerX}
+                cy={centerY}
+                r={radius}
+                fill={segment.color}
+                className="transition-all duration-300 hover:opacity-80 cursor-pointer"
+              />
+            ) : (
+              <path
+                d={segment.pathData}
+                fill={segment.color}
+                stroke="white"
+                strokeWidth="2"
+                className="transition-all duration-300 hover:opacity-80 cursor-pointer"
+              />
+            )}
             
             {/* Percentage inside slice */}
             {parseFloat(segment.percentage) > 5 && ( // Only show label if segment is large enough

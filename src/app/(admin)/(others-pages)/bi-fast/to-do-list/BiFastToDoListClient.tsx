@@ -5,9 +5,10 @@ import { useSession } from "@/hooks/useSession";
 import DataTable from "@/components/common/DataTable";
 import TailwindDatePicker from "@/components/common/TailwindDatePicker";
 import { Toast } from "primereact/toast";
-import { getBiFastTodoList, formatDateToDDMMYYYY, BiFastTodoResponse, updateBiFast, revisiBiFast } from "@/services/bifastTransaction";
+import { getBiFastTodoList, formatDateToDDMMYYYY, BiFastTodoResponse, updateBiFast, revisiBiFast, rejectBiFast } from "@/services/bifastTransaction";
 import Modal from "@/components/common/Modal";
 import FormField, { Input, Textarea, TimeInput24 } from "@/components/common/FormField";
+import { formatDateToYYYYMMDD } from "@/utils/dateFormatter";
 
 interface BiFastData {
   id: number;
@@ -62,9 +63,8 @@ export default function BiFastToDoListClient() {
       const response = await getBiFastTodoList(session.branchCode);
 
       if (response.status === "success" && response.data) {
-        // Transform API data to table format and filter out "Selesai Cabang"
+        // Transform API data to table format
         const transformedData: BiFastData[] = response.data
-          .filter((item) => item.status !== "Selesai Cabang") // Exclude "Selesai Cabang"
           .map((item) => ({
             id: item.id,
             namaNasabah: item.sender_name,
@@ -261,7 +261,8 @@ export default function BiFastToDoListClient() {
           profile: userProfile,
           penjelasan_spv: editFormData.penjelasanSPV,
           otor_spv_cabang: session.userId,
-          proses_on: session.userId
+          proses_on: session.userId,
+          indicator: selectedData.originalData.additional_info_rc,
         };
       } else if (userProfile === "estr_opr_kep") {
         // Payload for Operator Kepatuhan
@@ -282,13 +283,12 @@ export default function BiFastToDoListClient() {
           proses_on: session.userId
         };
       } else {
-        // Payload for Operator Cabang
+        // Payload for Operator Cabang (without timezone conversion)
         const formattedTanggalHubungi = editFormData.tglHubungiNasabah 
-          ? editFormData.tglHubungiNasabah.toISOString().split('T')[0]
+          ? formatDateToYYYYMMDD(editFormData.tglHubungiNasabah)
           : "";
         
-        const formattedTanggalTransaksi = new Date(selectedData.originalData.created_at)
-          .toISOString().split('T')[0];
+        const formattedTanggalTransaksi = formatDateToYYYYMMDD(new Date(selectedData.originalData.created_at));
 
         updateData = {
           id: selectedData.originalData.id.toString(),
@@ -388,11 +388,12 @@ export default function BiFastToDoListClient() {
         const userProfile = session?.userProfile || "";
         let isDisabled = false;
 
-        if (userProfile === "estr_opr_cab") {
-          // Operator Cabang: can edit all except approval statuses
-          isDisabled = row.status === "Persetujuan Supervisor Cabang" || 
-                       row.status === "Persetujuan Operator Kepatuhan" ||
-                       row.status === "Persetujuan Supervisor Kepatuhan";
+        // Always disable for "Selesai Cabang" status
+        if (row.status === "Selesai Cabang") {
+          isDisabled = true;
+        } else if (userProfile === "estr_opr_cab") {
+          // Operator Cabang: can only edit "Open" and "Revisi" status
+          isDisabled = !(row.status === "Open" || row.status === "Revisi");
         } else if (userProfile === "estr_spv_cab") {
           // Supervisor Cabang: can only edit "Persetujuan Supervisor Cabang"
           isDisabled = row.status !== "Persetujuan Supervisor Cabang";
@@ -470,6 +471,48 @@ export default function BiFastToDoListClient() {
     }
   };
 
+  const handleReject = async () => {
+    if (!selectedData || !selectedData.originalData) return;
+
+    setIsSaving(true);
+
+    try {
+      const response = await rejectBiFast({
+        id: selectedData.originalData.id.toString()
+      });
+
+      if (response.status === "success") {
+        toast.current?.show({
+          severity: "success",
+          summary: "Success",
+          detail: response.message || "Data berhasil direject",
+          life: 3000
+        });
+
+        handleCloseModal();
+        // Fetch updated data
+        await fetchData();
+      } else {
+        toast.current?.show({
+          severity: "error",
+          summary: "Error",
+          detail: response.message || "Gagal melakukan reject data",
+          life: 3000
+        });
+      }
+    } catch (error) {
+      console.error("Error rejecting BI-Fast data:", error);
+      toast.current?.show({
+        severity: "error",
+        summary: "Error",
+        detail: "Terjadi kesalahan saat melakukan reject data",
+        life: 3000
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const modalFooter = (
     <div className="flex justify-between items-center w-full">
       {/* Left side - Close button */}
@@ -482,8 +525,8 @@ export default function BiFastToDoListClient() {
 
       {/* Right side - Action buttons */}
       <div className="flex gap-2">
-        {/* Show Sendback button for all profiles except estr_opr_cab */}
-        {session?.userProfile !== "estr_opr_cab" && (
+        {/* Show Sendback button for all profiles except estr_opr_cab and estr_spv_kep */}
+        {session?.userProfile !== "estr_opr_cab" && session?.userProfile !== "estr_spv_kep" && (
           <button
             onClick={handleSendback}
             disabled={isSaving}
@@ -493,6 +536,20 @@ export default function BiFastToDoListClient() {
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             )}
             Sendback
+          </button>
+        )}
+
+        {/* Show Reject button only for estr_spv_kep */}
+        {session?.userProfile === "estr_spv_kep" && (
+          <button
+            onClick={handleReject}
+            disabled={isSaving}
+            className="px-6 py-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white rounded-full font-medium flex items-center gap-2"
+          >
+            {isSaving && (
+              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            )}
+            Reject
           </button>
         )}
         

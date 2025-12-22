@@ -70,7 +70,7 @@ export default function JobProgressTracker() {
         "Job5_DORMAN", "Job6_MTM", "Job7_BOP", "Job8_RBU",
         "Job9_RBU2", "Job10_RDS", "Job11_TUN", "Job12_DOR",
         "Job13_ExceedIncome", "Job14_TarikSetor", "Job15_JUDOL", "Job16_DB_SUSPECT",
-        "Job17_DB_TERORSIS", "Job18_TRF_SUSPECT"
+        "Job17_DB_TERORIS", "Job18_TRF_SUSPECT"
       ];
       
       // Simulate some jobs being skipped (OFF)
@@ -168,7 +168,8 @@ export default function JobProgressTracker() {
     // Connect to WebSocket
     const connectWebSocket = () => {
       try {
-        const ws = new WebSocket("ws://10.125.22.11:8080/api/admin/ws/job-progress");
+        // Mock WebSocket - disabled for demo
+        // const ws = new WebSocket("ws://localhost:8080/ws/job-progress");
         
         ws.onopen = () => {
           setIsConnected(true);

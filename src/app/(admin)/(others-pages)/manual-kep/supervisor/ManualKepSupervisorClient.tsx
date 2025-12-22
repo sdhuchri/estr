@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/hooks/useSession";
 import { otorisasiManualKepSpv } from "@/services/manualKep";
-import { sendMultipleEmails, DEFAULT_EMAIL_RECIPIENTS } from "@/services/emailQueue";
+import { sendEmailNotification } from "@/services/emailQueue";
 import { Toast } from "primereact/toast";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import DataTable from "@/components/common/DataTable";
@@ -185,20 +185,20 @@ export default function ManualKepSupervisorClient({ initialData }: ManualKepSupe
       const response = await otorisasiManualKepSpv(updateData);
 
       if (response.status === "success") {
-        // Send email notifications after successful action
+        // Send email notification after successful action
         try {
           const emailAction = confirmAction === "approve" 
             ? "manual_kep_supervisor_approve" 
             : "manual_kep_supervisor_reject";
           
-          await sendMultipleEmails(
-            DEFAULT_EMAIL_RECIPIENTS,
+          await sendEmailNotification(
             emailAction,
-            session.userId
+            session.userId,
+            session.branchCode || ""
           );
-          console.log(`Email notifications queued successfully for ${confirmAction}`);
+          console.log(`Email notification queued successfully for ${confirmAction}`);
         } catch (emailError) {
-          console.error("Error queuing emails:", emailError);
+          console.error("Error queuing email:", emailError);
           // Don't show error to user, just log it
         }
 
@@ -347,7 +347,7 @@ export default function ManualKepSupervisorClient({ initialData }: ManualKepSupe
               </FormField>
             </div>
 
-            <FormField label="Keterangan" className="mb-4">
+            <FormField label="Keterangan Indikator" className="mb-4">
               <Input value={selectedData.KETERANGAN} disabled />
             </FormField>
 
@@ -390,6 +390,7 @@ export default function ManualKepSupervisorClient({ initialData }: ManualKepSupe
                 onChange={(e) => handleInputChange('penjelasanCSO', e.target.value)}
                 rows={4}
                 placeholder="Masukkan penjelasan..."
+                maxLength={999}
                 disabled
               />
             </FormField>
@@ -400,6 +401,7 @@ export default function ManualKepSupervisorClient({ initialData }: ManualKepSupe
                 onChange={(e) => handleInputChange('penjelasanSPV', e.target.value)}
                 rows={4}
                 placeholder="Masukkan penjelasan SPV..."
+                maxLength={999}
                 disabled
               />
             </FormField>
@@ -410,6 +412,7 @@ export default function ManualKepSupervisorClient({ initialData }: ManualKepSupe
                 onChange={(e) => handleInputChange('penjelasanKepatuhan', e.target.value)}
                 rows={4}
                 placeholder="Masukkan penjelasan kepatuhan..."
+                maxLength={999}
                 disabled
               />
             </FormField>

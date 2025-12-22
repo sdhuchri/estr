@@ -1,3 +1,5 @@
+import { MOCK_LAPORAN_DATA, MOCK_LAPORAN_KETERLAMBATAN, simulateDelay } from "@/data/mockData";
+
 export interface LaporanCabangData {
   NO: number;
   ID_LAPORAN: string;
@@ -43,24 +45,30 @@ export interface LaporanCabangResponse {
 export interface LaporanCabangRequest {
   tanggal_awal: string;
   tanggal_akhir: string;
+  kode_cabang: string;
 }
 
 export const getLaporanCabang = async (
   params: LaporanCabangRequest
 ): Promise<LaporanCabangResponse> => {
-  const response = await fetch("http://10.125.22.11:8080/api/laporan/cabang", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(params),
-  });
+  try {
+    // Simulate API delay
+    await simulateDelay(500);
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    // Filter by cabang if not "999"
+    let filteredData = MOCK_LAPORAN_DATA;
+    if (params.kode_cabang !== "999") {
+      filteredData = MOCK_LAPORAN_DATA.filter(item => item.CABANG === params.kode_cabang);
+    }
+
+    return {
+      status: "success",
+      message: "Success",
+      data: filteredData
+    };
+  } catch (error) {
+    throw new Error(`Error fetching laporan cabang: ${error}`);
   }
-
-  return response.json();
 };
 
 // ==================== LAPORAN OPR KEPATUHAN ====================
@@ -114,19 +122,18 @@ export interface LaporanOprKepatuhanRequest {
 export const getLaporanOprKepatuhan = async (
   params: LaporanOprKepatuhanRequest
 ): Promise<LaporanOprKepatuhanResponse> => {
-  const response = await fetch("http://10.125.22.11:8080/api/laporan/opr-kepatuhan", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(params),
-  });
+  try {
+    // Simulate API delay
+    await simulateDelay(500);
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    return {
+      status: "success",
+      message: "Success",
+      data: MOCK_LAPORAN_DATA
+    };
+  } catch (error) {
+    throw new Error(`Error fetching laporan opr kepatuhan: ${error}`);
   }
-
-  return response.json();
 };
 
 // ==================== LAPORAN SPV KEPATUHAN ====================
@@ -180,19 +187,18 @@ export interface LaporanSpvKepatuhanRequest {
 export const getLaporanSpvKepatuhan = async (
   params: LaporanSpvKepatuhanRequest
 ): Promise<LaporanSpvKepatuhanResponse> => {
-  const response = await fetch("http://10.125.22.11:8080/api/laporan/spv-kepatuhan", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(params),
-  });
+  try {
+    // Simulate API delay
+    await simulateDelay(500);
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    return {
+      status: "success",
+      message: "Success",
+      data: MOCK_LAPORAN_DATA
+    };
+  } catch (error) {
+    throw new Error(`Error fetching laporan spv kepatuhan: ${error}`);
   }
-
-  return response.json();
 };
 
 // ==================== LAPORAN REJECT ====================
@@ -232,33 +238,66 @@ export interface LaporanRejectData {
   SKALA: string | null;
 }
 
+export interface LaporanRejectPagination {
+  current_page: number;
+  has_next_page: boolean;
+  has_prev_page: boolean;
+  records_per_page: number;
+  total_pages: number;
+  total_records: number;
+}
+
 export interface LaporanRejectResponse {
   status: string;
   message: string;
-  data: LaporanRejectData[];
+  data: {
+    data: LaporanRejectData[];
+    pagination: LaporanRejectPagination;
+  } | LaporanRejectData[]; // Support both old and new structure
 }
 
 export interface LaporanRejectRequest {
   tanggal_awal: string;
   tanggal_akhir: string;
+  page?: number;
+  limit?: number;
 }
 
 export const getLaporanReject = async (
   params: LaporanRejectRequest
 ): Promise<LaporanRejectResponse> => {
-  const response = await fetch("http://10.125.22.11:8080/api/laporan/reject", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(params),
-  });
+  try {
+    // Simulate API delay
+    await simulateDelay(500);
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    // Filter rejected items
+    const rejectedData = MOCK_LAPORAN_DATA.filter(item => item.STATUS === "10");
+
+    // Pagination
+    const page = params.page || 1;
+    const limit = params.limit || 10;
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedData = rejectedData.slice(startIndex, endIndex);
+
+    return {
+      status: "success",
+      message: "Success",
+      data: {
+        data: paginatedData,
+        pagination: {
+          current_page: page,
+          has_next_page: endIndex < rejectedData.length,
+          has_prev_page: page > 1,
+          records_per_page: limit,
+          total_pages: Math.ceil(rejectedData.length / limit),
+          total_records: rejectedData.length
+        }
+      }
+    };
+  } catch (error) {
+    throw new Error(`Error fetching laporan reject: ${error}`);
   }
-
-  return response.json();
 };
 
 // ==================== LAPORAN ALL ====================
@@ -298,31 +337,97 @@ export interface LaporanAllData {
   SKALA: string | null;
 }
 
+export interface LaporanAllPagination {
+  current_page: number;
+  has_next_page: boolean;
+  has_prev_page: boolean;
+  records_per_page: number;
+  total_pages: number;
+  total_records: number;
+}
+
 export interface LaporanAllResponse {
   status: string;
   message: string;
-  data: LaporanAllData[];
+  data: {
+    data: LaporanAllData[];
+    pagination: LaporanAllPagination;
+  } | LaporanAllData[]; // Support both old and new structure
 }
 
 export interface LaporanAllRequest {
   tanggal_awal: string;
   tanggal_akhir: string;
+  page?: number;
+  limit?: number;
 }
 
 export const getLaporanAll = async (
   params: LaporanAllRequest
 ): Promise<LaporanAllResponse> => {
-  const response = await fetch("http://10.125.22.11:8080/api/laporan/all", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(params),
-  });
+  try {
+    // Simulate API delay
+    await simulateDelay(500);
 
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    // Pagination
+    const page = params.page || 1;
+    const limit = params.limit || 10;
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedData = MOCK_LAPORAN_DATA.slice(startIndex, endIndex);
+
+    return {
+      status: "success",
+      message: "Success",
+      data: {
+        data: paginatedData,
+        pagination: {
+          current_page: page,
+          has_next_page: endIndex < MOCK_LAPORAN_DATA.length,
+          has_prev_page: page > 1,
+          records_per_page: limit,
+          total_pages: Math.ceil(MOCK_LAPORAN_DATA.length / limit),
+          total_records: MOCK_LAPORAN_DATA.length
+        }
+      }
+    };
+  } catch (error) {
+    throw new Error(`Error fetching laporan all: ${error}`);
   }
+};
 
-  return response.json();
+
+// ==================== LAPORAN KETERLAMBATAN ====================
+export interface LaporanKeterlambatanData {
+  tanggal_laporan: string;
+  keterlambatan: number;
+  daftar_cabang: string;
+}
+
+export interface LaporanKeterlambatanResponse {
+  success: boolean;
+  count: number;
+  data: LaporanKeterlambatanData[];
+}
+
+export interface LaporanKeterlambatanRequest {
+  tanggal_awal: string;
+  tanggal_akhir: string;
+}
+
+export const getLaporanKeterlambatan = async (
+  params: LaporanKeterlambatanRequest
+): Promise<{ status: string; message: string; data?: LaporanKeterlambatanData[] }> => {
+  try {
+    // Simulate API delay
+    await simulateDelay(500);
+
+    return {
+      status: "success",
+      message: "Data berhasil diambil",
+      data: MOCK_LAPORAN_KETERLAMBATAN
+    };
+  } catch (error) {
+    throw new Error(`Error fetching laporan keterlambatan: ${error}`);
+  }
 };

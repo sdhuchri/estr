@@ -1,16 +1,22 @@
 // services/manualCabangService.ts
-
-const API_BASE_URL = "http://10.125.22.11:8080";
+import { 
+  MOCK_MANUAL_CABANG_TODO, 
+  MOCK_MANUAL_CABANG_TRACKING, 
+  MOCK_MANUAL_CABANG_OTORISASI,
+  simulateDelay 
+} from "@/data/mockData";
 
 // ==================== GET MANUAL CABANG EDIT ====================
 export async function getManualCabangEdit(cabang: string) {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/manual-cabang/todo`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cabang }),
-    });
-    return await res.json();
+    // Simulate API delay
+    await simulateDelay(500);
+
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: MOCK_MANUAL_CABANG_TODO 
+    };
   } catch (error) {
     console.error("Error fetching nasabah:", error);
     return { status: "error", message: "Failed to fetch data", data: [] };
@@ -28,15 +34,13 @@ export async function updateManualCabang(data: {
   no_cif: string;
 }) {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/manual-cabang/update`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
-    return await res.json();
+    // Simulate API delay
+    await simulateDelay(500);
+
+    return { 
+      status: "success", 
+      message: "Data berhasil diupdate" 
+    };
   } catch (error) {
     console.error("Error updating nasabah transaksi mencurigakan:", error);
     return { status: "error", message: "Failed to update data" };
@@ -53,15 +57,13 @@ export async function updateTodo(data: {
   input_by_cbg: string;
 }) {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/manual-cabang/update-todo`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
-    return await res.json();
+    // Simulate API delay
+    await simulateDelay(500);
+
+    return { 
+      status: "success", 
+      message: "Todo berhasil diupdate" 
+    };
   } catch (error) {
     console.error("Error updating todo:", error);
     return { status: "error", message: "Failed to update todo" };
@@ -89,15 +91,13 @@ export async function inputManualCabang(data: {
   keterangan_status: string;
 }) {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/manual-cabang/input-manual`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
-    return await res.json();
+    // Simulate API delay
+    await simulateDelay(500);
+
+    return { 
+      status: "success", 
+      message: "Data berhasil disimpan" 
+    };
   } catch (error) {
     console.error("Error input manual cabang:", error);
     return { status: "error", message: "Failed to input manual cabang" };
@@ -107,15 +107,14 @@ export async function inputManualCabang(data: {
 // ==================== GET TRACKING ====================
 export async function getManualCabangTracking(cabang: string) {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/manual-cabang/tracking`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ cabang }),
-      cache: "no-store",
-    });
-    return await res.json();
+    // Simulate API delay
+    await simulateDelay(500);
+
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: MOCK_MANUAL_CABANG_TRACKING 
+    };
   } catch (error) {
     console.error("Error fetching tracking data:", error);
     return { status: "error", message: "Failed to fetch tracking data", data: [] };
@@ -125,15 +124,14 @@ export async function getManualCabangTracking(cabang: string) {
 // ==================== GET OTORISASI ====================
 export async function getManualCabangOtorisasi(cabang: string) {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/manual-cabang/get-otorisasi`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ cabang }),
-      cache: "no-store",
-    });
-    return await res.json();
+    // Simulate API delay
+    await simulateDelay(500);
+
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: MOCK_MANUAL_CABANG_OTORISASI 
+    };
   } catch (error) {
     console.error("Error fetching otorisasi data:", error);
     return { status: "error", message: "Failed to fetch otorisasi data", data: [] };
@@ -148,15 +146,13 @@ export async function otorisasiManualCabang(data: {
   action: "approve" | "reject";
 }) {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/manual-cabang/otorisasi`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
-    return await res.json();
+    // Simulate API delay
+    await simulateDelay(500);
+
+    return { 
+      status: "success", 
+      message: `Data berhasil ${data.action === "approve" ? "diapprove" : "direject"}` 
+    };
   } catch (error) {
     console.error("Error processing otorisasi:", error);
     return { status: "error", message: "Failed to process otorisasi" };

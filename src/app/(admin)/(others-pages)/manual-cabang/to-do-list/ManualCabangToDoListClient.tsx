@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { updateTodo } from "@/services/manualCabang";
-import { sendMultipleEmails, DEFAULT_EMAIL_RECIPIENTS } from "@/services/emailQueue";
+import { sendEmailNotification } from "@/services/emailQueue";
 import { Toast } from "primereact/toast";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import Modal from "@/components/common/Modal";
@@ -10,6 +10,7 @@ import DataTable from "@/components/common/DataTable";
 import FormField, { Input, CustomListbox, Textarea, TimeInput24 } from "@/components/common/FormField";
 import TailwindDatePicker from "@/components/common/TailwindDatePicker";
 import { useSession } from "@/hooks/useSession";
+import { formatDateToYYYYMMDD } from "@/utils/dateFormatter";
 
 interface ManualCabangData {
   NO: string;
@@ -44,6 +45,7 @@ interface ManualCabangData {
   TRANSAKSI_MENCURIGAKAN: string | null;
   TENGGAT: string | null;
   SKALA: string | null;
+  KETERLAMBATAN: string | null;
 }
 
 interface ManualCabangToDoListClientProps {
@@ -111,10 +113,13 @@ export default function ManualCabangToDoListClient({ initialData }: ManualCabang
   const handleRowAction = (action: string, item: ManualCabangData) => {
     if (action === "edit") {
       setSelectedData(item);
+      // Map Y/T to Ya/Tidak
+      const transaksiMencurigakan = item.TRANSAKSI_MENCURIGAKAN === "Y" ? "Ya" : item.TRANSAKSI_MENCURIGAKAN === "T" ? "Tidak" : "Tidak";
+      
       setEditFormData({
         tglHubungiNasabah: item.TGL_HUB_NASABAH ? new Date(item.TGL_HUB_NASABAH) : null,
         jamHubungiNasabah: item.JAM_HUB_NASABAH || "00:00:00",
-        transaksiMencurigakan: item.TRANSAKSI_MENCURIGAKAN || "Tidak",
+        transaksiMencurigakan: transaksiMencurigakan,
         penjelasanCSO: item.KET_CABANG_OPR || ""
       });
       setIsModalOpen(true);
@@ -163,8 +168,8 @@ export default function ManualCabangToDoListClient({ initialData }: ManualCabang
     setIsSaving(true);
 
     try {
-      // Format date to YYYY-MM-DD for API
-      const formattedDate = editFormData.tglHubungiNasabah!.toISOString().split('T')[0];
+      // Format date to YYYY-MM-DD for API (without timezone conversion)
+      const formattedDate = formatDateToYYYYMMDD(editFormData.tglHubungiNasabah!);
 
       // Convert "Ya"/"Tidak" to "Y"/"T" for database
       const transaksiMencurigakanValue = editFormData.transaksiMencurigakan === "Ya" ? "Y" : "T";
@@ -181,16 +186,16 @@ export default function ManualCabangToDoListClient({ initialData }: ManualCabang
       const response = await updateTodo(updateData);
 
       if (response.status === "success") {
-        // Send email notifications after successful save
+        // Send email notification after successful save
         try {
-          await sendMultipleEmails(
-            DEFAULT_EMAIL_RECIPIENTS,
+          await sendEmailNotification(
             "manual_cabang_update",
-            session?.userId || "system"
+            session?.userId || "system",
+            session?.branchCode || ""
           );
-          console.log("Email notifications queued successfully");
+          console.log("Email notification queued successfully");
         } catch (emailError) {
-          console.error("Error queuing emails:", emailError);
+          console.error("Error queuing email:", emailError);
           // Don't show error to user, just log it
         }
 
@@ -488,6 +493,18 @@ export default function ManualCabangToDoListClient({ initialData }: ManualCabang
                 placeholder="Masukkan penjelasan..."
               />
             </FormField>
+
+            {/* Conditional field: Show only if status is Send Back */}
+            {selectedData.KETERANGAN_STATUS === "Send Back" && (
+              <FormField label="Penjelasan Send Back" className="mb-4">
+                <Textarea
+                  value={selectedData.ALASAN_REJECT || "-"}
+                  onChange={() => {}}
+                  rows={4}
+                  disabled
+                />
+              </FormField>
+            )}
           </>
         )}
       </Modal>

@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://10.125.22.11:8080";
+import { MOCK_BIFAST_TODO, MOCK_BIFAST_STATUS, simulateDelay } from "@/data/mockData";
 
 // ==================== INTERFACES ====================
 export interface BiFastTodoResponse {
@@ -45,19 +45,20 @@ export interface BiFastTodoApiResponse {
  */
 export async function getBiFastTodoList(kodeCabang: string): Promise<BiFastTodoApiResponse> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/bifast/todo`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        kode_cabang: kodeCabang,
-      }),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    const result = await res.json();
-    return result;
+    // Filter by cabang if not "999" (all branches)
+    let filteredData = MOCK_BIFAST_TODO;
+    if (kodeCabang !== "999") {
+      filteredData = MOCK_BIFAST_TODO.filter(item => item.cabang === kodeCabang);
+    }
+
+    return {
+      status: "success",
+      message: "Success",
+      data: filteredData
+    };
   } catch (error) {
     console.error("Error fetching BI-Fast todo list:", error);
     return {
@@ -97,17 +98,13 @@ export interface UpdateBiFastResponse {
  */
 export async function updateBiFast(data: UpdateBiFastRequest): Promise<UpdateBiFastResponse> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/bifast/upsert`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    const result = await res.json();
-    return result;
+    return {
+      status: "success",
+      message: "Data berhasil disimpan"
+    };
   } catch (error) {
     console.error("Error updating BI-Fast data:", error);
     return {
@@ -137,17 +134,13 @@ export interface RevisiBiFastResponse {
  */
 export async function revisiBiFast(data: RevisiBiFastRequest): Promise<RevisiBiFastResponse> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/bifast/revisi`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    const result = await res.json();
-    return result;
+    return {
+      status: "success",
+      message: "Data berhasil direvisi"
+    };
   } catch (error) {
     console.error("Error revisi BI-Fast data:", error);
     return {
@@ -204,19 +197,20 @@ export interface BiFastStatusApiResponse {
  */
 export async function getBiFastStatus(kodeCabang: string): Promise<BiFastStatusApiResponse> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/bifast/status`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        kode_cabang: kodeCabang,
-      }),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    const result = await res.json();
-    return result;
+    // Filter by cabang if not "999" (all branches)
+    let filteredData = MOCK_BIFAST_STATUS;
+    if (kodeCabang !== "999") {
+      filteredData = MOCK_BIFAST_STATUS.filter(item => item.cabang === kodeCabang);
+    }
+
+    return {
+      status: "success",
+      message: "Success",
+      data: filteredData
+    };
   } catch (error) {
     console.error("Error fetching BI-Fast status:", error);
     return {
@@ -274,19 +268,20 @@ export interface BiFastLaporanApiResponse {
  */
 export async function getBiFastLaporan(kodeCabang: string): Promise<BiFastLaporanApiResponse> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/bifast/laporan`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        kode_cabang: kodeCabang,
-      }),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    const result = await res.json();
-    return result;
+    // Filter by cabang if not "999" (all branches)
+    let filteredData = MOCK_BIFAST_STATUS; // Use status data as laporan
+    if (kodeCabang !== "999") {
+      filteredData = MOCK_BIFAST_STATUS.filter(item => item.cabang === kodeCabang);
+    }
+
+    return {
+      status: "success",
+      message: "Success",
+      data: filteredData
+    };
   } catch (error) {
     console.error("Error fetching BI-Fast laporan:", error);
     return {
@@ -309,4 +304,40 @@ export function formatDateToDDMMYYYY(isoDate: string): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const year = date.getFullYear();
   return `${day}-${month}-${year}`;
+}
+
+// ==================== REJECT BI-FAST ====================
+export interface RejectBiFastRequest {
+  id: string;
+}
+
+export interface RejectBiFastResponse {
+  status: string;
+  message: string;
+}
+
+/**
+ * Reject BI-Fast transaction
+ * @param data - Data untuk reject transaksi
+ * @returns Promise dengan response reject
+ * 
+ * @example
+ * const response = await rejectBiFast({ id: "123" });
+ */
+export async function rejectBiFast(data: RejectBiFastRequest): Promise<RejectBiFastResponse> {
+  try {
+    // Simulate API delay
+    await simulateDelay(500);
+
+    return {
+      status: "success",
+      message: "Transaksi berhasil direject"
+    };
+  } catch (error) {
+    console.error("Error rejecting BI-Fast transaction:", error);
+    return {
+      status: "error",
+      message: "Gagal melakukan reject transaksi",
+    };
+  }
 }

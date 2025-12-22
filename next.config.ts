@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   basePath: "/estr",
   // Enable Cache Components (PPR) - Next.js 16 syntax
   cacheComponents: true,
+  // Image configuration
+  images: {
+    unoptimized: true, // Disable image optimization for static export compatibility
+  },
   // Turbopack configuration for Next.js 16
   turbopack: {
     rules: {

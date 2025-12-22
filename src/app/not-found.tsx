@@ -40,7 +40,7 @@ export default function NotFound() {
       </div>
       {/* <!-- Footer --> */}
       <p className="absolute text-sm text-center text-gray-500 -translate-x-1/2 bottom-6 left-1/2 dark:text-gray-400">
-        &copy; 2025 - E-STR BCA Syariah
+        &copy; 2025 - E-STR
       </p>
     </div>
   );

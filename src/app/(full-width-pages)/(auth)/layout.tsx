@@ -33,7 +33,7 @@ export default function AuthLayout({
   return (
     <>
       <style jsx global>{`
-        @import url('https://fonts.googleapis.com/css2?family=Tiny5&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700;800&display=swap');
         
         @keyframes slowRotate {
           from {
@@ -48,8 +48,8 @@ export default function AuthLayout({
           animation: slowRotate 300s linear infinite;
         }
         
-        .font-tiny5 {
-          font-family: 'Tiny5', cursive;
+        .font-opensans {
+          font-family: 'Open Sans', sans-serif;
         }
       `}</style>
       <div className="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0" style={{ minHeight: '100vh' }}>
@@ -99,11 +99,11 @@ export default function AuthLayout({
                 {/* <!-- ===== Common Grid Shape Start ===== --> */}
                 <div className="flex flex-col items-center max-w-xs">
                   <div className="block mb-4 text-center select-none cursor-default">
-                    <h1 className="text-5xl font-bold text-white dark:text-white font-tiny5">
-                      ESTR
+                    <h1 className="text-5xl font-bold text-white dark:text-white font-opensans">
+                      Lorem Ipsum
                     </h1>
                     <p className="text-m text-gray-300 dark:text-white/70 mt-1">
-                      Electronic Suspicious Transaction Report
+                      Lorem ipsum dolor sit amet
                     </p>
                   </div>
                 </div>

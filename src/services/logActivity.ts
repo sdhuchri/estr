@@ -1,18 +1,35 @@
+import { simulateDelay } from "@/data/mockData";
+
 export const getLogActivity = async () => {
   try {
-    const response = await fetch("http://10.125.9.43/estr/get_log_activity", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to fetch log activity.");
-    }
-
-    return await response.json();
+    // Return mock log activity data
+    return {
+      status: "success",
+      message: "Success",
+      data: [
+        {
+          user_id: "demo",
+          action: "LOGIN",
+          url: "/signin",
+          kode_cabang: "001",
+          nama_cabang: "Kantor Pusat Jakarta",
+          keterangan: "User logged in",
+          timestamp: "2025-01-10 10:30:00"
+        },
+        {
+          user_id: "demo",
+          action: "VIEW",
+          url: "/manual-cabang/to-do-list",
+          kode_cabang: "001",
+          nama_cabang: "Kantor Pusat Jakarta",
+          keterangan: "Viewed manual cabang todo list",
+          timestamp: "2025-01-10 10:35:00"
+        }
+      ]
+    };
   } catch (error) {
     throw error;
   }
@@ -30,20 +47,15 @@ export interface LogEntry {
 
 export const insertLogActivity = async (log: LogEntry) => {
   try {
-    const response = await fetch("http://10.125.9.43/estr/log_activity", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(log),
-    });
+    // Simulate API delay
+    await simulateDelay(300);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed to insert log.");
-    }
+    console.log("Log activity:", log);
 
-    return await response.json(); // { status: "success", message: "..." }
+    return { 
+      status: "success", 
+      message: "Log activity berhasil disimpan" 
+    };
   } catch (error) {
     throw error;
   }

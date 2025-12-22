@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useSession } from "@/hooks/useSession";
 import { otorisasiManualCabang } from "@/services/manualCabang";
-import { sendMultipleEmails, DEFAULT_EMAIL_RECIPIENTS } from "@/services/emailQueue";
+import { sendEmailNotification } from "@/services/emailQueue";
 import { Toast } from "primereact/toast";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import Modal from "@/components/common/Modal";
@@ -161,7 +161,7 @@ export default function ManualCabangOtorisasiClient({ initialData }: ManualCaban
       toast.current?.show({
         severity: "error",
         summary: "Error",
-        detail: "Penjelasan SPV harus diisi untuk reject"
+        detail: "Penjelasan SPV harus diisi untuk send back"
       });
       return;
     }
@@ -192,27 +192,27 @@ export default function ManualCabangOtorisasiClient({ initialData }: ManualCaban
       const response = await otorisasiManualCabang(updateData);
 
       if (response.status === "success") {
-        // Send email notifications after successful action
+        // Send email notification after successful action
         try {
           const emailAction = confirmAction === "approve" 
             ? "manual_cabang_approve" 
             : "manual_cabang_reject";
           
-          await sendMultipleEmails(
-            DEFAULT_EMAIL_RECIPIENTS,
+          await sendEmailNotification(
             emailAction,
-            session.userId
+            session.userId,
+            session.branchCode || ""
           );
-          console.log(`Email notifications queued successfully for ${confirmAction}`);
+          console.log(`Email notification queued successfully for ${confirmAction}`);
         } catch (emailError) {
-          console.error("Error queuing emails:", emailError);
+          console.error("Error queuing email:", emailError);
           // Don't show error to user, just log it
         }
 
         toast.current?.show({
           severity: "success",
           summary: "Success",
-          detail: confirmAction === "approve" ? "Data berhasil diapprove" : "Data berhasil direject"
+          detail: confirmAction === "approve" ? "Data berhasil diapprove" : "Data berhasil di-send back"
         });
 
         handleCloseModal();
@@ -317,12 +317,12 @@ export default function ManualCabangOtorisasiClient({ initialData }: ManualCaban
         <button
           onClick={handleReject}
           disabled={isSaving}
-          className="px-6 py-2 bg-red-500 hover:bg-red-600 disabled:bg-gray-400 text-white rounded-full font-medium flex items-center gap-2"
+          className="px-6 py-2 bg-orange-500 hover:bg-orange-600 disabled:bg-gray-400 text-white rounded-full font-medium flex items-center gap-2"
         >
           {isSaving && confirmAction === "reject" && (
             <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           )}
-          {isSaving && confirmAction === "reject" ? "Processing..." : "Reject"}
+          {isSaving && confirmAction === "reject" ? "Processing..." : "Send Back"}
         </button>
         <button
           onClick={handleApprove}
@@ -357,9 +357,9 @@ export default function ManualCabangOtorisasiClient({ initialData }: ManualCaban
         isOpen={showConfirm}
         onClose={() => setShowConfirm(false)}
         onConfirm={handleConfirm}
-        title={confirmAction === "approve" ? "Konfirmasi Approve" : "Konfirmasi Reject"}
-        message={confirmAction === "approve" ? "Apakah Anda yakin ingin approve data ini?" : "Apakah Anda yakin ingin reject data ini?"}
-        confirmLabel={confirmAction === "approve" ? "Ya, Approve" : "Ya, Reject"}
+        title={confirmAction === "approve" ? "Konfirmasi Approve" : "Konfirmasi Send Back"}
+        message={confirmAction === "approve" ? "Apakah Anda yakin ingin approve data ini?" : "Apakah Anda yakin ingin send back data ini?"}
+        confirmLabel={confirmAction === "approve" ? "Ya, Approve" : "Ya, Send Back"}
         cancelLabel="Batal"
         variant={confirmAction === "reject" ? "danger" : "default"}
       />
@@ -526,6 +526,7 @@ export default function ManualCabangOtorisasiClient({ initialData }: ManualCaban
                 onChange={(e) => handleInputChange('penjelasanCSO', e.target.value)}
                 rows={4}
                 placeholder="Masukkan penjelasan..."
+                maxLength={999}
                 disabled
               />
             </FormField>
@@ -536,6 +537,7 @@ export default function ManualCabangOtorisasiClient({ initialData }: ManualCaban
                 onChange={(e) => handleInputChange('penjelasanSPV', e.target.value)}
                 rows={4}
                 placeholder="Masukkan penjelasan SPV..."
+                maxLength={999}
               />
             </FormField>
           </>

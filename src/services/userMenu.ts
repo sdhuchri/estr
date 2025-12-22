@@ -1,21 +1,16 @@
 // src/services/userMenu.ts
+import { MOCK_USER_MENU, simulateDelay } from "@/data/mockData";
 
 export const userMenu = async (userid: string) => {
   try {
-    const response = await fetch("http://10.125.9.43/estr/usermenu", {
-      method: "POST", // Assuming you're fetching reference data
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userid }),
-    });
+    // Simulate API delay
+    await simulateDelay(300);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message);
-    }
-
-    return await response.json();
+    return {
+      status: "success",
+      message: "Success",
+      data: MOCK_USER_MENU
+    };
   } catch (error) {
     throw error;
   }

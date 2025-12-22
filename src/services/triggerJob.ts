@@ -1,37 +1,18 @@
 // services/triggerJob.ts
+import { simulateDelay } from "@/data/mockData";
 
 export async function triggerSingleJob(jobName: string, date: string) {
   try {
-    // Get userId from localStorage (more reliable than cookie)
-    let userId = null;
-    try {
-      const userMenuStr = localStorage.getItem("userMenu");
-      if (userMenuStr) {
-        const userMenu = JSON.parse(userMenuStr);
-        userId = userMenu[0]?.UserId || null;
-      }
-    } catch (e) {
-      // Silent error
-    }
-    
-    // Fallback to cookie if localStorage fails
-    if (!userId) {
-      const cookies = document.cookie.split(';');
-      const userIdCookie = cookies.find(c => c.trim().startsWith('userId_client='));
-      userId = userIdCookie?.split('=')[1]?.trim() || null;
-    }
+    // Simulate API delay
+    await simulateDelay(1000);
 
-    const res = await fetch("http://10.125.22.11:8080/api/admin/trigger-job", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        "X-User-ID": userId || "",
-      },
-      body: JSON.stringify({ job_name: jobName, date }),
-      cache: "no-store",
-    });
+    console.log(`Triggering job: ${jobName} for date: ${date}`);
 
-    return await res.json();
+    return { 
+      status: "success", 
+      message: `Job ${jobName} berhasil dijalankan`, 
+      data: null 
+    };
   } catch (error) {
     return { status: "error", message: "Failed to trigger job", data: null };
   }
@@ -39,36 +20,16 @@ export async function triggerSingleJob(jobName: string, date: string) {
 
 export async function triggerAllJobs(date: string) {
   try {
-    // Get userId from localStorage (more reliable than cookie)
-    let userId = null;
-    try {
-      const userMenuStr = localStorage.getItem("userMenu");
-      if (userMenuStr) {
-        const userMenu = JSON.parse(userMenuStr);
-        userId = userMenu[0]?.UserId || null;
-      }
-    } catch (e) {
-      // Silent error
-    }
-    
-    // Fallback to cookie if localStorage fails
-    if (!userId) {
-      const cookies = document.cookie.split(';');
-      const userIdCookie = cookies.find(c => c.trim().startsWith('userId_client='));
-      userId = userIdCookie?.split('=')[1]?.trim() || null;
-    }
+    // Simulate API delay
+    await simulateDelay(2000);
 
-    const res = await fetch("http://10.125.22.11:8080/api/admin/trigger-all-jobs", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-        "X-User-ID": userId || "",
-      },
-      body: JSON.stringify({ date }),
-      cache: "no-store",
-    });
+    console.log(`Triggering all jobs for date: ${date}`);
 
-    return await res.json();
+    return { 
+      status: "success", 
+      message: "Semua job berhasil dijalankan", 
+      data: null 
+    };
   } catch (error) {
     return { status: "error", message: "Failed to trigger all jobs", data: null };
   }
@@ -76,29 +37,31 @@ export async function triggerAllJobs(date: string) {
 
 export async function getJobLogs() {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/admin/logs", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    if (!res.ok) {
-      return { status: "error", message: "Failed to fetch job logs", data: null };
-    }
-
-    const text = await res.text();
-    if (!text) {
-      return { status: "error", message: "Empty response", data: null };
-    }
-
-    try {
-      return JSON.parse(text);
-    } catch (parseError) {
-      return { status: "error", message: "Invalid JSON response", data: null };
-    }
+    // Return mock job logs
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: [
+        {
+          filename: "job_passby_2025-01-10.log",
+          size: "2.5 KB",
+          modified: "2025-01-10 10:30:00"
+        },
+        {
+          filename: "job_et_2025-01-10.log",
+          size: "1.8 KB",
+          modified: "2025-01-10 10:35:00"
+        },
+        {
+          filename: "job_bop_2025-01-10.log",
+          size: "3.2 KB",
+          modified: "2025-01-10 10:40:00"
+        }
+      ]
+    };
   } catch (error) {
     return { status: "error", message: "Failed to fetch job logs", data: null };
   }
@@ -106,29 +69,24 @@ export async function getJobLogs() {
 
 export async function getJobLogContent(filename: string) {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/admin/logs/read", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ file_name: filename }),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    if (!res.ok) {
-      return { status: "error", message: "Failed to fetch job log content", data: null };
-    }
-
-    const text = await res.text();
-    if (!text) {
-      return { status: "error", message: "Empty response", data: null };
-    }
-
-    try {
-      return JSON.parse(text);
-    } catch (parseError) {
-      return { status: "error", message: "Invalid JSON response", data: null };
-    }
+    // Return mock log content
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: {
+        content: `[2025-01-10 10:30:00] Job started: ${filename}
+[2025-01-10 10:30:05] Processing data...
+[2025-01-10 10:30:10] Found 45 records
+[2025-01-10 10:30:15] Processing record 1/45
+[2025-01-10 10:30:20] Processing record 2/45
+...
+[2025-01-10 10:35:00] Job completed successfully
+[2025-01-10 10:35:00] Total records processed: 45`
+      }
+    };
   } catch (error) {
     return { status: "error", message: "Failed to fetch job log content", data: null };
   }
@@ -136,30 +94,33 @@ export async function getJobLogContent(filename: string) {
 
 export async function deleteAllJobLogs() {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/admin/logs/delete-all", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    if (!res.ok) {
-      return { status: "error", message: "Failed to delete log files", data: null };
-    }
-
-    const text = await res.text();
-    if (!text) {
-      return { status: "error", message: "Empty response", data: null };
-    }
-
-    try {
-      return JSON.parse(text);
-    } catch (parseError) {
-      return { status: "error", message: "Invalid JSON response", data: null };
-    }
+    return { 
+      status: "success", 
+      message: "Semua log berhasil dihapus", 
+      data: null 
+    };
   } catch (error) {
     return { status: "error", message: "Failed to delete log files", data: null };
+  }
+}
+
+// Trigger job untuk menonaktifkan task yang direject
+export async function triggerUpdateStatusReject() {
+  try {
+    // Simulate API delay
+    await simulateDelay(1000);
+
+    console.log("Triggering JobUpdateStatusReject");
+
+    return { 
+      status: "success", 
+      message: "Job update status reject berhasil dijalankan", 
+      data: null 
+    };
+  } catch (error) {
+    return { status: "error", message: "Failed to trigger job", data: null };
   }
 }

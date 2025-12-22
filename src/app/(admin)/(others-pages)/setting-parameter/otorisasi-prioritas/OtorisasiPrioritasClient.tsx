@@ -59,7 +59,7 @@ export default function OtorisasiPrioritasClient({ initialData }: OtorisasiPrior
           redFlagHigh: apiData.redflag_list.high || "",
           redFlagMedium: apiData.redflag_list.medium || "",
           redFlagLow: apiData.redflag_list.low || "",
-          status: apiData.status || ""
+          status: apiData.STATUS || ""
         });
       }
     } catch (error) {
@@ -304,6 +304,7 @@ export default function OtorisasiPrioritasClient({ initialData }: OtorisasiPrior
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    maxLength={255}
                   />
                 </div>
 

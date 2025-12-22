@@ -5,11 +5,12 @@ import { useSession } from "@/hooks/useSession";
 import ManualCabangForm from "@/components/forms/ManualCabangForm";
 import { Save, X } from "lucide-react";
 import { Toast } from "primereact/toast";
-import { getCabangOptions, getIndikatorOptions } from "@/services/helper";
+import { getCabangOptions, getIndikatorOptions, getPrioritas } from "@/services/helper";
 import { inputManualCabang } from "@/services/manualCabang";
-import { sendMultipleEmails, DEFAULT_EMAIL_RECIPIENTS } from "@/services/emailQueue";
+import { sendEmailNotification } from "@/services/emailQueue";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import FadeInWrapper from "@/components/common/FadeInWrapper";
+import { formatDateToYYYYMMDD } from "@/utils/dateFormatter";
 
 interface FormData {
   noCif: string;
@@ -54,6 +55,7 @@ export default function InputManualClient() {
   const [isLoadingCabang, setIsLoadingCabang] = useState(true);
   const [isLoadingIndikator, setIsLoadingIndikator] = useState(true);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [skala, setSkala] = useState<string>("Tinggi"); // Default skala
 
   useEffect(() => {
     if (!loading && !session) {
@@ -111,11 +113,27 @@ export default function InputManualClient() {
     fetchIndikatorOptions();
   }, []);
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = async (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
     }));
+
+    // Fetch prioritas when indikator changes
+    if (field === "indikator" && value) {
+      try {
+        const response = await getPrioritas(value);
+        if (response.status === "success" && response.data?.prioritas) {
+          setSkala(response.data.prioritas);
+        } else {
+          // Default to "Tinggi" if API fails
+          setSkala("Tinggi");
+        }
+      } catch (error) {
+        console.error("Error fetching prioritas:", error);
+        setSkala("Tinggi");
+      }
+    }
   };
 
   const validateForm = (): boolean => {
@@ -252,9 +270,9 @@ export default function InputManualClient() {
     setIsSubmitting(true);
 
     try {
-      // Format dates to YYYY-MM-DD
-      const formattedTglTransaksi = formData.tanggalTransaksi!.toISOString().split('T')[0];
-      const formattedTglHubNasabah = formData.tglHubungiNasabah!.toISOString().split('T')[0];
+      // Format dates to YYYY-MM-DD (without timezone conversion)
+      const formattedTglTransaksi = formatDateToYYYYMMDD(formData.tanggalTransaksi!);
+      const formattedTglHubNasabah = formatDateToYYYYMMDD(formData.tglHubungiNasabah!);
 
       // Get cabang_induk from cabangOptions
       const selectedCabang = cabangOptions.find(opt => opt.value === formData.cabang);
@@ -279,23 +297,23 @@ export default function InputManualClient() {
         input_by_cbg: session.userId,
         transaksi_mencurigakan: transaksiMencurigakanValue,
         tenggat: formattedTglTransaksi,
-        skala: "Tinggi",
-        keterangan_status: "Status aktif"
+        skala: skala,
+        keterangan_status: "Open"
       };
 
       const response = await inputManualCabang(requestData);
 
       if (response.status === "success") {
-        // Send email notifications after successful save
+        // Send email notification after successful save
         try {
-          await sendMultipleEmails(
-            DEFAULT_EMAIL_RECIPIENTS,
+          await sendEmailNotification(
             "manual_cabang_input",
-            session.userId
+            session.userId,
+            session.branchCode || ""
           );
-          console.log("Email notifications queued successfully");
+          console.log("Email notification queued successfully");
         } catch (emailError) {
-          console.error("Error queuing emails:", emailError);
+          console.error("Error queuing email:", emailError);
           // Don't show error to user, just log it
         }
 
@@ -322,6 +340,8 @@ export default function InputManualClient() {
           penjelasanSPV: "",
           penjelasanKepatuhan: ""
         });
+        
+        setSkala("Tinggi"); // Reset skala to default
       } else {
         toast.current?.show({
           severity: "error",
@@ -359,6 +379,8 @@ export default function InputManualClient() {
       penjelasanSPV: "",
       penjelasanKepatuhan: ""
     });
+
+    setSkala("Tinggi"); // Reset skala to default
 
     toast.current?.show({
       severity: "info",

@@ -392,7 +392,7 @@ export default function SettingParameterClient({ initialData }: SettingParameter
       fields: [
         {
           key: "frekuensiPenyimpanan" as keyof ParameterData,
-          label: "Frekuensi Penyimpanan",
+          label: "Frekuensi Penyimpangan",
           suffix: "kali"
         },
         {
@@ -511,6 +511,7 @@ export default function SettingParameterClient({ initialData }: SettingParameter
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    maxLength={255}
                   />
                 </div>
 

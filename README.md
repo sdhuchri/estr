@@ -1,173 +1,311 @@
-# TailAdmin Next.js - Free Next.js Tailwind Admin Dashboard Template
+# E-STR Demo - Sistem Transaksi Mencurigakan
 
-TailAdmin is a free and open-source admin dashboard template built on **Next.js and Tailwind CSS** providing developers with everything they need to create a feature-rich and data-driven: back-end, dashboard, or admin panel solution for any sort of web project.
+![E-STR Demo Preview](./banner.png)
 
-![TailAdmin - Next.js Dashboard Preview](./banner.png)
+E-STR (Electronic Suspicious Transaction Report) adalah aplikasi demo untuk sistem pelaporan dan monitoring transaksi mencurigakan. Aplikasi ini dibangun menggunakan **Next.js 16, React 19, TypeScript, dan Tailwind CSS V4**.
 
-With TailAdmin Next.js, you get access to all the necessary dashboard UI components, elements, and pages required to build a high-quality and complete dashboard or admin panel. Whether you're building a dashboard or admin panel for a complex web application or a simple website. 
+> **Catatan**: Ini adalah versi demo portfolio yang menggunakan data dummy. Tidak ada koneksi ke backend atau database real.
 
-TailAdmin utilizes the powerful features of **Next.js 15** and common features of Next.js such as server-side rendering (SSR), static site generation (SSG), and seamless API route integration. Combined with the advancements of **React 19** and the robustness of **TypeScript**, TailAdmin is the perfect solution to help get your project up and running quickly.
+## 📋 Tentang Aplikasi
 
-## Overview
+E-STR Demo adalah sistem monitoring dan pelaporan transaksi mencurigakan yang mencakup:
 
-TailAdmin provides essential UI components and layouts for building feature-rich, data-driven admin dashboards and control panels. It's built on:
+- **Dashboard Home**: Statistik dan ringkasan transaksi mencurigakan
+- **Manual Cabang**: Pengelolaan laporan dari cabang (To Do List, Tracking, Input Manual, Otorisasi)
+- **Manual Kepatuhan**: Pengelolaan oleh tim kepatuhan (Operator & Supervisor)
+- **BI-Fast Transaction**: Monitoring transaksi BI-Fast (To Do List, Status, Laporan Aktivitas)
+- **List Reject**: Daftar transaksi yang ditolak (Aktif, Operator, Supervisor)
+- **Setting**: Pengaturan parameter sistem
+- **Setting Parameter**: Konfigurasi otorisasi dan prioritas
+- **Laporan**: Laporan transaksi dan keterlambatan
+- **Manual Job**: Trigger job manual (UAT Only)
 
-- Next.js 15.x
-- React 19
-- TypeScript
-- Tailwind CSS V4
+## 🚀 Teknologi
 
-### Quick Links
-- [✨ Visit Website](https://tailadmin.com)
-- [📄 Documentation](https://tailadmin.com/docs)
-- [⬇️ Download](https://tailadmin.com/download)
-- [🖌️ Figma Design File (Community Edition)](https://www.figma.com/community/file/1463141366275764364)
-- [⚡ Get PRO Version](https://tailadmin.com/pricing)
+### Frontend
+Aplikasi ini dibangun dengan:
 
-### Demos
-- [Free Version](https://nextjs-free-demo.tailadmin.com)
-- [Pro Version](https://nextjs-demo.tailadmin.com)
+- **Next.js 16.x** - React framework dengan App Router
+- **React 19.2** - Library UI terbaru
+- **TypeScript 5** - Type-safe JavaScript
+- **Tailwind CSS V4** - Utility-first CSS framework
+- **ApexCharts 4.3** - Visualisasi data dan grafik
+- **PrimeReact 10.9** - UI component library
+- **Flatpickr** - Date picker
+- **jsPDF & jsPDF-AutoTable** - PDF generation
+- **Mock Data** - Semua data menggunakan dummy data (untuk versi demo)
 
-### Other Versions
-- [HTML Version](https://github.com/TailAdmin/tailadmin-free-tailwind-dashboard-template)
-- [React Version](https://github.com/TailAdmin/free-react-tailwind-admin-dashboard)
-- [Vue.js Version](https://github.com/TailAdmin/vue-tailwind-admin-dashboard)
+### Backend (Implementasi Asli)
+Backend aplikasi ini telah diimplementasikan menggunakan:
 
-## Installation
+- **Golang** - Bahasa pemrograman backend yang cepat dan efisien
+- **Gin Framework** - Web framework Golang yang ringan dan performa tinggi
+- **RESTful API** - Arsitektur API yang terstruktur
+- **JWT Authentication** - Sistem autentikasi berbasis token
+- **SQL Server Database** - Database untuk menyimpan data transaksi
+- **WebSocket** - Real-time communication untuk monitoring job progress
+- **CORS Middleware** - Handling cross-origin requests
+- **Structured Logging** - Logging terstruktur untuk monitoring dan debugging
 
-### Prerequisites
-To get started with TailAdmin, ensure you have the following prerequisites installed and set up:
+> **Catatan**: Versi demo ini menggunakan mock data di frontend. Backend Golang dengan Gin framework sudah diimplementasikan dan berjalan di production environment, namun tidak disertakan dalam repository demo ini untuk alasan keamanan.
 
-- Node.js 18.x or later (recommended to use Node.js 20.x or later)
+## 📦 Instalasi
 
-### Cloning the Repository
-Clone the repository using the following command:
+### Prasyarat
 
+Pastikan Anda telah menginstal:
+- Node.js 18.x atau lebih baru (disarankan Node.js 20.x atau lebih baru)
+- npm atau yarn
+
+### Langkah Instalasi
+
+1. Clone repository ini:
 ```bash
-git clone https://github.com/TailAdmin/free-nextjs-admin-dashboard.git
+git clone <repository-url>
+cd <project-folder>
 ```
 
-> Windows Users: place the repository near the root of your drive if you face issues while cloning.
+2. Install dependencies:
+```bash
+npm install
+# atau
+yarn install
+```
 
-1. Install dependencies:
-    ```bash
-    npm install
-    # or
-    yarn install
-    ```
-    > Use `--legacy-peer-deps` flag if you face peer-dependency error during installation.
+> Gunakan flag `--legacy-peer-deps` jika mengalami error peer-dependency saat instalasi.
 
-2. Start the development server:
-    ```bash
-    npm run dev
-    # or
-    yarn dev
-    ```
+3. Jalankan development server:
+```bash
+npm run dev
+# atau
+yarn dev
+```
 
-## Components
+4. Buka browser dan akses:
+```
+http://localhost:3000/estr/signin
+```
 
-TailAdmin is a pre-designed starting point for building a web-based dashboard using Next.js and Tailwind CSS. The template includes:
+> Jika port 3000 sudah digunakan, aplikasi akan berjalan di port lain (misalnya 3001). Perhatikan output di terminal.
 
-- Sophisticated and accessible sidebar
-- Data visualization components
-- Profile management and custom 404 page
-- Tables and Charts(Line and Bar)
-- Authentication forms and input elements
-- Alerts, Dropdowns, Modals, Buttons and more
-- Can't forget Dark Mode 🕶️
+## 🔐 Cara Login
 
-All components are built with React and styled using Tailwind CSS for easy customization.
+Aplikasi ini menyediakan 2 akun demo:
 
-## Feature Comparison
+### Akun Operator
+```
+Username: demo
+Password: demo123
+Role: Operator Kepatuhan
+```
 
-### Free Version
-- 1 Unique Dashboard
-- 30+ dashboard components
-- 50+ UI elements
-- Basic Figma design files
-- Community support
+### Akun Supervisor
+```
+Username: admin
+Password: admin123
+Role: Supervisor Kepatuhan
+```
 
-### Pro Version
-- 5 Unique Dashboards: Analytics, Ecommerce, Marketing, CRM, Stocks (more coming soon)
-- 400+ dashboard components and UI elements
-- Complete Figma design file
-- Email support
+### Langkah Login:
+1. Buka halaman login di `/estr/signin`
+2. Masukkan username dan password sesuai akun di atas
+3. Klik tombol "Sign In"
+4. Anda akan diarahkan ke dashboard home
 
-To learn more about pro version features and pricing, visit our [pricing page](https://tailadmin.com/pricing).
+## 📱 Fitur Utama
 
-## Changelog
+### 1. Dashboard Home
+- Statistik transaksi mencurigakan dari cabang dan kepatuhan
+- Grafik visualisasi data
+- Ringkasan status transaksi
 
-### Version 2.0.2 - [March 25, 2025]
+### 2. Manual Cabang
+- **To Do List**: Daftar transaksi yang perlu ditindaklanjuti
+- **Tracking**: Pelacakan status transaksi
+- **Input Manual**: Input laporan transaksi manual
+- **Otorisasi**: Otorisasi transaksi oleh supervisor
 
-- Upgraded to Next v15.2.3 for [CVE-2025-29927](https://nextjs.org/blog/cve-2025-29927) concerns
-- Included overrides vectormap for packages to prevent peer dependency errors during installation.
-- Migrated from react-flatpickr to flatpickr package for React 19 support
+### 3. Manual Kepatuhan
+- **Operator Kepatuhan**: Review transaksi oleh operator
+- **Supervisor Kepatuhan**: Approval final oleh supervisor
 
-### Version 2.0.1 - [February 27, 2025]
+### 4. BI-Fast Transaction
+- Monitoring transaksi BI-Fast real-time
+- Status transaksi
+- Laporan aktivitas
 
-#### Update Overview
+### 5. List Reject
+- Daftar transaksi yang ditolak
+- Filter berdasarkan status (Aktif, Operator, Supervisor)
 
-- Upgraded to Tailwind CSS v4 for better performance and efficiency.
-- Updated class usage to match the latest syntax and features.
-- Replaced deprecated class and optimized styles.
+### 6. Setting & Parameter
+- Konfigurasi parameter sistem
+- Setting kode transaksi
+- Setting prioritas
+- Setting aktivasi
+- Otorisasi parameter
 
-#### Next Steps
+### 7. Laporan
+- Laporan transaksi mencurigakan
+- Laporan keterlambatan
+- Export data
 
-- Run npm install or yarn install to update dependencies.
-- Check for any style changes or compatibility issues.
-- Refer to the Tailwind CSS v4 [Migration Guide](https://tailwindcss.com/docs/upgrade-guide) on this release. if needed.
-- This update keeps the project up to date with the latest Tailwind improvements. 🚀
+## 🎨 Fitur UI/UX
 
-### v2.0.0 (February 2025)
-A major update focused on Next.js 15 implementation and comprehensive redesign.
+- **Responsive Design**: Tampilan optimal di desktop, tablet, dan mobile
+- **Sidebar Navigation**: Navigasi yang mudah dengan collapsible sidebar
+- **Data Tables**: Tabel data dengan sorting, filtering, dan pagination
+- **Charts & Graphs**: Visualisasi data dengan ApexCharts
+- **Modal & Alerts**: Komponen interaktif untuk notifikasi
+- **Form Elements**: Input, select, datepicker, dan form validation
 
-#### Major Improvements
-- Complete redesign using Next.js 15 App Router and React Server Components
-- Enhanced user interface with Next.js-optimized components
-- Improved responsiveness and accessibility
-- New features including collapsible sidebar, chat screens, and calendar
-- Redesigned authentication using Next.js App Router and server actions
-- Updated data visualization using ApexCharts for React
+## 📂 Struktur Data
 
-#### Breaking Changes
+Semua data dummy tersimpan di `src/data/mockData.ts` yang mencakup:
 
-- Migrated from Next.js 14 to Next.js 15
-- Chart components now use ApexCharts for React
-- Authentication flow updated to use Server Actions and middleware
+- User authentication data
+- Dashboard statistics
+- Manual Cabang (Todo, Tracking, Otorisasi)
+- Manual Kepatuhan (Operator & Supervisor)
+- BI-Fast transactions
+- List Reject data
+- Laporan & Keterlambatan
+- Parameter settings
+- Cabang & Indikator reference data
 
-[Read more](https://tailadmin.com/docs/update-logs/nextjs) on this release.
+## 🔧 Konfigurasi
 
-#### Breaking Changes
-- Migrated from Next.js 14 to Next.js 15
-- Chart components now use ApexCharts for React
-- Authentication flow updated to use Server Actions and middleware
+### Base Path
+Aplikasi menggunakan base path `/estr` untuk semua route. Konfigurasi ada di `next.config.ts`:
 
-### v1.3.4 (July 01, 2024)
-- Fixed JSvectormap rendering issues
+```typescript
+basePath: '/estr'
+```
 
-### v1.3.3 (June 20, 2024)
-- Fixed build error related to Loader component
+### Environment
+Tidak ada environment variables yang diperlukan karena aplikasi menggunakan mock data.
 
-### v1.3.2 (June 19, 2024)
-- Added ClickOutside component for dropdown menus
-- Refactored sidebar components
-- Updated Jsvectormap package
+## 🛠️ Development
 
-### v1.3.1 (Feb 12, 2024)
-- Fixed layout naming consistency
-- Updated styles
+### Build untuk Production
+```bash
+npm run build
+# atau
+yarn build
+```
 
-### v1.3.0 (Feb 05, 2024)
-- Upgraded to Next.js 14
-- Added Flatpickr integration
-- Improved form elements
-- Enhanced multiselect functionality
-- Added default layout component
+### Menjalankan Production Build
+```bash
+npm run start
+# atau
+yarn start
+```
 
-## License
+### Linting
+```bash
+npm run lint
+# atau
+yarn lint
+```
 
-TailAdmin Next.js Free Version is released under the MIT License.
+## 🏗️ Arsitektur Sistem
 
-## Support
+### Versi Production (dengan Backend)
+```
+┌─────────────────────┐
+│   Next.js App       │ (Frontend)
+│   (Port 3000)       │
+└────────┬────────────┘
+         │ HTTP/REST API
+         │ WebSocket
+         ▼
+┌─────────────────────┐
+│  Golang + Gin       │ (Backend API)
+│   (Port 8080)       │
+└────────┬────────────┘
+         │ SQL Queries
+         ▼
+┌─────────────────────┐
+│ SQL Server Database │
+└─────────────────────┘
+```
 
-If you find this project helpful, please consider giving it a star on GitHub. Your support helps us continue developing and maintaining this template.
+### Versi Demo (Mock Data)
+```
+┌─────────────────┐
+│   Next.js App   │ (Frontend)
+│   (Port 3000)   │
+│                 │
+│  + Mock Data    │ (src/data/mockData.ts)
+│  + API Routes   │ (Next.js API Routes)
+└─────────────────┘
+```
+
+### Endpoint API Backend (Golang + Gin)
+Backend yang telah diimplementasikan menyediakan endpoint berikut:
+
+#### Authentication
+- `POST /api/auth/login` - Login user
+- `POST /api/auth/logout` - Logout user
+- `GET /api/auth/validate` - Validasi session token
+
+#### Dashboard
+- `GET /api/dashboard/home` - Data statistik dashboard
+- `GET /api/dashboard/stats` - Statistik transaksi
+
+#### Manual Cabang
+- `GET /api/manual-cabang/todo` - Daftar todo list
+- `GET /api/manual-cabang/tracking` - Tracking transaksi
+- `POST /api/manual-cabang/input` - Input manual transaksi
+- `PUT /api/manual-cabang/otorisasi/:id` - Otorisasi transaksi
+
+#### Manual Kepatuhan
+- `GET /api/manual-kep/operator` - Data untuk operator
+- `GET /api/manual-kep/supervisor` - Data untuk supervisor
+- `PUT /api/manual-kep/review/:id` - Review transaksi
+
+#### BI-Fast Transaction
+- `GET /api/bifast/todo` - Todo list BI-Fast
+- `GET /api/bifast/status` - Status transaksi
+- `GET /api/bifast/laporan` - Laporan aktivitas
+
+#### List Reject
+- `GET /api/list-reject/aktif` - Daftar reject aktif
+- `GET /api/list-reject/operator` - Reject by operator
+- `GET /api/list-reject/supervisor` - Reject by supervisor
+
+#### Parameter Settings
+- `GET /api/parameter/redflag` - Parameter redflag
+- `PUT /api/parameter/redflag/:id` - Update parameter
+- `GET /api/parameter/kode-transaksi` - Kode transaksi
+- `GET /api/parameter/prioritas` - Setting prioritas
+- `GET /api/parameter/aktivasi` - Setting aktivasi
+
+#### Laporan
+- `GET /api/laporan/transaksi` - Laporan transaksi
+- `GET /api/laporan/keterlambatan` - Laporan keterlambatan
+- `POST /api/laporan/export` - Export laporan
+
+#### WebSocket
+- `WS /ws/job-progress` - Real-time job progress monitoring
+
+## 📝 Catatan Penting
+
+- Aplikasi ini adalah **demo portfolio** dan menggunakan **data dummy**
+- Backend asli menggunakan **Golang dengan Gin framework** dan **SQL Server Database**
+- Versi demo ini tidak terkoneksi ke backend untuk alasan keamanan
+- Semua data akan reset setiap kali refresh halaman
+- Tidak ada persistensi data di versi demo
+- Session login menggunakan cookies dengan durasi 8 jam
+
+## 📄 Lisensi
+
+Aplikasi ini dibuat untuk keperluan portfolio dan demo.
+
+## 👨‍💻 Pengembang
+
+Dikembangkan sebagai portfolio project menggunakan template TailAdmin Next.js.
+
+---
+
+**E-STR Demo Portfolio** © 2025

@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     // Call existing auth service
     const result = await signIn(userid, password);
 
-    if (result.message === "Success") {
+    if (result.message === "Success" && result.data) {
       // Prepare session data
       const sessionData = {
         userId: result.data.userid,
@@ -68,8 +68,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          message: result.message,
-          detail: result.detail,
+          message: result.message || "Login failed",
+          detail: result.detail || "Invalid credentials",
         },
         { status: 401 }
       );

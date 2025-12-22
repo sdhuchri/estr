@@ -8,11 +8,20 @@ import { FileText, Clock, CheckCircle, XCircle, TrendingUp, Users } from "lucide
 import PieChart from "@/components/charts/PieChart";
 import { getDashboardHome, formatDateToAPI } from "@/services/dashboardHome";
 import DashboardSkeleton from "@/components/skeletons/DashboardSkeleton";
+import { getCabangOptions } from "@/services/helper";
+import { CustomListbox } from "@/components/common/FormField";
+
+// Utility function to format number with thousand separator
+const formatNumber = (num: number): string => {
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
 
 interface DashboardStats {
   totalTransaksi: number;
   totalDataCabang: number;
   totalDataKepatuhan: number;
+  totalCabang: number;
+  totalKepatuhan: number;
   cabang: {
     belumDikerjakan: number;
     belumOtorisasiSPV: number;
@@ -43,10 +52,16 @@ export default function HomeClient() {
   });
   const [isLoading, setIsLoading] = useState(false);
 
+  // Branch filter state
+  const [selectedCabang, setSelectedCabang] = useState<string>("all");
+  const [cabangOptions, setCabangOptions] = useState<Array<{ value: string; label: string }>>([]);
+
   const [stats, setStats] = useState<DashboardStats>({
     totalTransaksi: 0,
     totalDataCabang: 0,
     totalDataKepatuhan: 0,
+    totalCabang: 0,
+    totalKepatuhan: 0,
     cabang: {
       belumDikerjakan: 0,
       belumOtorisasiSPV: 0,
@@ -67,6 +82,23 @@ export default function HomeClient() {
     }
   }, [session, loading, router]);
 
+  // Load cabang options on mount
+  useEffect(() => {
+    const loadCabangOptions = async () => {
+      try {
+        const options = await getCabangOptions("999"); // Get all branches
+        setCabangOptions([
+          { value: "all", label: "Semua Cabang" },
+          ...options
+        ]);
+      } catch (error) {
+        console.error("Error loading cabang options:", error);
+      }
+    };
+
+    loadCabangOptions();
+  }, []);
+
   const fetchDashboardData = async () => {
     if (!periodeAwal || !periodeAkhir) {
       toast.current?.show({
@@ -80,16 +112,22 @@ export default function HomeClient() {
 
     setIsLoading(true);
     try {
+      // Pass kode_cabang only if not "all"
+      const kodeCabang = selectedCabang === "all" ? undefined : selectedCabang;
+      
       const response = await getDashboardHome(
         formatDateToAPI(periodeAwal),
-        formatDateToAPI(periodeAkhir)
+        formatDateToAPI(periodeAkhir),
+        kodeCabang
       );
 
       if (response.status === "success" && response.data) {
         setStats({
           totalTransaksi: response.data.total.total_transaksi_mencurigakan,
-          totalDataCabang: response.data.cabang.total_cabang,
-          totalDataKepatuhan: response.data.kepatuhan.total_kep,
+          totalDataCabang: response.data.total.total_transaksi_mencurigakan_cabang,
+          totalDataKepatuhan: response.data.total.total_transaksi_mencurigakan_kep,
+          totalCabang: response.data.cabang.total_cabang,
+          totalKepatuhan: response.data.kepatuhan.total_kep,
           cabang: {
             belumDikerjakan: response.data.cabang.belum_dikerjakan_cabang,
             belumOtorisasiSPV: response.data.cabang.belum_diotorisasi_spv,
@@ -124,12 +162,15 @@ export default function HomeClient() {
     }
   };
 
-  // Fetch data on mount and when dates change
+  // Check if user has permission to view dashboard
+  const canViewDashboard = session?.userProfile === "estr_opr_kep" || session?.userProfile === "estr_spv_kep";
+
+  // Fetch data on mount and when dates or branch filter change
   useEffect(() => {
-    if (session && periodeAwal && periodeAkhir) {
+    if (session && periodeAwal && periodeAkhir && canViewDashboard) {
       fetchDashboardData();
     }
-  }, [session, periodeAwal, periodeAkhir]);
+  }, [session, periodeAwal, periodeAkhir, selectedCabang, canViewDashboard]);
 
   // Show skeleton while loading
   if (isLoading) {
@@ -138,6 +179,15 @@ export default function HomeClient() {
         <Toast ref={toast} />
         <DashboardSkeleton />
       </>
+    );
+  }
+
+  // Hide dashboard if user doesn't have permission
+  if (!canViewDashboard) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Toast ref={toast} />
+      </div>
     );
   }
 
@@ -169,6 +219,20 @@ export default function HomeClient() {
           opacity: 0;
           animation: fadeIn 0.6s ease-out 0.3s forwards;
         }
+
+        .dashboard-home-listbox button {
+          border-radius: 0.5rem !important;
+          border: 1px solid #d1d5db !important;
+          padding: 0.5rem 1rem !important;
+          font-size: 0.875rem !important;
+          height: 2.5rem !important;
+          box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+        }
+        .dashboard-home-listbox button:focus {
+          outline: none !important;
+          border-color: #3b82f6 !important;
+          box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1) !important;
+        }
       `}</style>
       <Toast ref={toast} />
 
@@ -186,9 +250,19 @@ export default function HomeClient() {
                 </p>
               </div>
 
-              {/* Date Filter Actions */}
+              {/* Filter Actions */}
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">Periode Tanggal</span>
+                {/* Branch Filter */}
+                <div className="w-56 dashboard-home-listbox">
+                  <CustomListbox
+                    value={selectedCabang}
+                    onChange={(value) => setSelectedCabang(value)}
+                    options={cabangOptions}
+                    placeholder="Semua Cabang"
+                  />
+                </div>
+
+                {/* Date Filter */}
                 <TailwindDatePicker
                   value={periodeAwal}
                   onChange={(date) => setPeriodeAwal(date)}
@@ -226,7 +300,7 @@ export default function HomeClient() {
                           Total Transaksi Mencurigakan
                         </p>
                         <p className="text-3xl font-bold text-blue-600">
-                          {stats.totalTransaksi}
+                          {formatNumber(stats.totalTransaksi)}
                         </p>
                       </div>
                       <FileText className="w-10 h-10 text-blue-600" />
@@ -238,7 +312,7 @@ export default function HomeClient() {
                           Total Data Mencurigakan di Cabang
                         </p>
                         <p className="text-3xl font-bold text-purple-600">
-                          {stats.totalDataCabang}
+                          {formatNumber(stats.totalDataCabang)}
                         </p>
                       </div>
                       <Users className="w-10 h-10 text-purple-600" />
@@ -250,7 +324,7 @@ export default function HomeClient() {
                           Total Data Mencurigakan di Kepatuhan
                         </p>
                         <p className="text-3xl font-bold text-green-600">
-                          {stats.totalDataKepatuhan}
+                          {formatNumber(stats.totalDataKepatuhan)}
                         </p>
                       </div>
                       <TrendingUp className="w-10 h-10 text-green-600" />
@@ -273,7 +347,7 @@ export default function HomeClient() {
                         Total Transaksi Mencurigakan Cabang
                       </h3>
                       <span className="text-3xl font-bold text-blue-600">
-                        : {stats.totalDataCabang}
+                        : {formatNumber(stats.totalCabang)}
                       </span>
                     </div>
 
@@ -288,7 +362,7 @@ export default function HomeClient() {
                             </span>
                           </div>
                           <span className="font-semibold text-gray-900">
-                            {stats.cabang.belumDikerjakan}
+                            {formatNumber(stats.cabang.belumDikerjakan)}
                           </span>
                         </div>
 
@@ -300,7 +374,7 @@ export default function HomeClient() {
                             </span>
                           </div>
                           <span className="font-semibold text-gray-900">
-                            {stats.cabang.belumOtorisasiSPV}
+                            {formatNumber(stats.cabang.belumOtorisasiSPV)}
                           </span>
                         </div>
 
@@ -312,7 +386,7 @@ export default function HomeClient() {
                             </span>
                           </div>
                           <span className="font-semibold text-gray-900">
-                            {stats.cabang.sudahOtorisasiSPV}
+                            {formatNumber(stats.cabang.sudahOtorisasiSPV)}
                           </span>
                         </div>
 
@@ -324,7 +398,7 @@ export default function HomeClient() {
                             </span>
                           </div>
                           <span className="font-semibold text-gray-900">
-                            {stats.cabang.redflagReject}
+                            {formatNumber(stats.cabang.redflagReject)}
                           </span>
                         </div>
                       </div>
@@ -367,7 +441,7 @@ export default function HomeClient() {
                         Total Transaksi Mencurigakan Kepatuhan
                       </h3>
                       <span className="text-3xl font-bold text-green-600">
-                        : {stats.totalDataKepatuhan}
+                        : {formatNumber(stats.totalKepatuhan)}
                       </span>
                     </div>
 
@@ -382,7 +456,7 @@ export default function HomeClient() {
                             </span>
                           </div>
                           <span className="font-semibold text-gray-900">
-                            {stats.kepatuhan.belumDikerjakan}
+                            {formatNumber(stats.kepatuhan.belumDikerjakan)}
                           </span>
                         </div>
 
@@ -394,7 +468,7 @@ export default function HomeClient() {
                             </span>
                           </div>
                           <span className="font-semibold text-gray-900">
-                            {stats.kepatuhan.belumOtorisasiSPV}
+                            {formatNumber(stats.kepatuhan.belumOtorisasiSPV)}
                           </span>
                         </div>
 
@@ -406,7 +480,7 @@ export default function HomeClient() {
                             </span>
                           </div>
                           <span className="font-semibold text-gray-900">
-                            {stats.kepatuhan.sudahOtorisasiSPV}
+                            {formatNumber(stats.kepatuhan.sudahOtorisasiSPV)}
                           </span>
                         </div>
 
@@ -418,7 +492,7 @@ export default function HomeClient() {
                             </span>
                           </div>
                           <span className="font-semibold text-gray-900">
-                            {stats.kepatuhan.rejectSPV}
+                            {formatNumber(stats.kepatuhan.rejectSPV)}
                           </span>
                         </div>
                       </div>

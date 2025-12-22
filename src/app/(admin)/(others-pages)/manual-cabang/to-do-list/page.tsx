@@ -40,6 +40,7 @@ interface ManualCabangData {
   TRANSAKSI_MENCURIGAKAN: string | null;
   TENGGAT: string | null;
   SKALA: string | null;
+  KETERLAMBATAN: string | null;
 }
 
 // Server Component for data fetching

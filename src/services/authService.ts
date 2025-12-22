@@ -1,42 +1,62 @@
 // src/services/authService.ts
+import { MOCK_USERS, MOCK_USER_MENU, simulateDelay } from "@/data/mockData";
+
 export const signIn = async (userid: string, password: string) => {
   try {
-    const response = await fetch("http://10.125.22.11:8080/api/auth/login", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userid, password }),
-    });
+    // Simulate API delay
+    await simulateDelay(800);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Login failed");
+    // Find user in mock data
+    const user = MOCK_USERS.find(
+      (u) => u.userid === userid && u.password === password
+    );
+
+    if (!user) {
+      return {
+        message: "Failed",
+        detail: "Invalid userid or password"
+      };
     }
 
-    return await response.json();
+    // Return success response with user data
+    return {
+      message: "Success",
+      data: {
+        userid: user.userid,
+        userdomain: user.userDomain,
+        userName: user.userName,
+        branch: user.branch,
+        role: user.role,
+        level: user.level,
+        departmen: user.departmen,
+        userSession: user.userSession
+      },
+      usermenu: MOCK_USER_MENU
+    };
   } catch (error) {
     throw error;
   }
 };
 
-
 export const getUserMenu = async (userid: string) => {
   try {
-    const response = await fetch("http://10.125.22.11:8080/api/auth/usermenu", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ userid }),
-    });
+    // Simulate API delay
+    await simulateDelay(300);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || "Failed get user menu");
+    // Find user in mock data
+    const user = MOCK_USERS.find((u) => u.userid === userid);
+
+    if (!user) {
+      return {
+        message: "Failed",
+        detail: "User not found"
+      };
     }
 
-    return await response.json();
+    return {
+      message: "Success",
+      data: MOCK_USER_MENU
+    };
   } catch (error) {
     throw error;
   }

@@ -5,12 +5,9 @@ import { useSidebar } from "@/context/SidebarContext";
 import AppHeader from "@/layout/AppHeader";
 import AppSidebar from "@/layout/AppSidebar";
 import Backdrop from "@/layout/Backdrop";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import Watermark from "@/components/watermark/watermark";
-import { useInactivityLogout } from "@/services/sessionTimeout";
-import { Toast } from "primereact/toast";
 import { useSession } from "@/hooks/useSession";
-import { useSessionValidationOnNav } from "@/hooks/useSessionValidationOnNav";
 
 export default function AdminLayout({
   children,
@@ -19,22 +16,6 @@ export default function AdminLayout({
 }) {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
   const { session } = useSession();
-  const toastRef = useRef<Toast>(null);
-
-  const showTimeoutToast = () => {
-    toastRef.current?.show({
-      severity: "warn",
-      summary: "Session Timeout",
-      detail: "Anda telah logout karena tidak aktif selama 10 menit.",
-      life: 3000,
-    });
-  };
-
-  // Inactivity logout disabled
-  // useInactivityLogout(15, showTimeoutToast);
-  
-  // Session validation disabled
-  // useSessionValidationOnNav();
 
   const mainContentMargin = isMobileOpen
     ? "ml-0"
@@ -55,21 +36,26 @@ export default function AdminLayout({
 
     const watermarkText = `${session.userId} / ${dayName} / ${dateStr} / ${timeStr}`;
 
+    let watermarkInstance: any = null;
     const timeout = setTimeout(() => {
-      Watermark.init({
+      watermarkInstance = Watermark.init({
         targetSelector: ".watermark-area",
-        imageUrl: "/estr/images/logo/BCA_Syariah_logo.png",
+        imageUrl: "", // Removed logo for demo
         text: watermarkText,
         opacity: 0.1,
       });
     }, 300);
 
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      if (watermarkInstance && typeof watermarkInstance.destroy === 'function') {
+        watermarkInstance.destroy();
+      }
+    };
   }, [session?.userId]);
 
   return (
     <div className="min-h-screen xl:flex">
-      <Toast ref={toastRef} position="top-right" />
       <AppSidebar />
       <Backdrop />
       <div className={`flex-1 transition-all duration-300 ease-in-out ${mainContentMargin}`}>

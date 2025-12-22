@@ -52,7 +52,14 @@ export async function generateExcel(
   const wb = XLSX.utils.book_new();
   const wsData: any[][] = [];
 
-  // Add table headers only
+  // Add title in uppercase to make it more prominent
+  wsData.push([title.toUpperCase()]);
+
+  // Add empty row
+  wsData.push([]);
+
+  // Add table headers
+  const headerRowIndex = 2;
   const headers = columns.map((col) => col.header);
   wsData.push(headers);
 
@@ -74,10 +81,33 @@ export async function generateExcel(
   }));
   ws["!cols"] = colWidths;
 
-  // Style header row (first row is header)
+  // Set row heights - make title row taller
+  ws["!rows"] = [
+    { hpt: 30 }, // Title row height (30 points)
+    { hpt: 15 }, // Empty row
+    { hpt: 20 }, // Header row height
+  ];
+
+  // Style title (first row) - h3 size (18pt) and bold
+  const titleCell = XLSX.utils.encode_cell({ r: 0, c: 0 });
+  if (ws[titleCell]) {
+    ws[titleCell].s = {
+      font: { bold: true, sz: 18, color: { rgb: "000000" } },
+      alignment: { horizontal: "center", vertical: "center" },
+    };
+  }
+
+  // Merge title cells across all columns
+  if (!ws["!merges"]) ws["!merges"] = [];
+  ws["!merges"].push({
+    s: { r: 0, c: 0 },
+    e: { r: 0, c: columns.length - 1 },
+  });
+
+  // Style table header row
   headers.forEach((_, colIndex) => {
     const cellAddress = XLSX.utils.encode_cell({
-      r: 0,
+      r: headerRowIndex,
       c: colIndex,
     });
     if (ws[cellAddress]) {
@@ -92,8 +122,13 @@ export async function generateExcel(
   // Add worksheet to workbook
   XLSX.utils.book_append_sheet(wb, ws, sheetName);
 
-  // Generate Excel file
-  const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  // Generate Excel file with cellStyles enabled
+  const excelBuffer = XLSX.write(wb, { 
+    bookType: "xlsx", 
+    type: "array",
+    cellStyles: true,
+    bookSST: true
+  });
   return new Blob([excelBuffer], {
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   });

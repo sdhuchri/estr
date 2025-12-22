@@ -1,18 +1,18 @@
+// services/manualKep.ts
+import { MOCK_MANUAL_KEP_OPR, MOCK_MANUAL_KEP_SPV, simulateDelay } from "@/data/mockData";
 
 export async function getManualKepOpr() {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/manual-kep/opr", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}), // required for php://input decode
-      cache: "no-store", // ensure always fresh data
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return whatever PHP sends
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: MOCK_MANUAL_KEP_OPR 
+    };
   } catch (error) {
-    console.error("Error fetching nasabah transaksi mencurigakan:", error);
+    console.error("Error fetching manual kep opr:", error);
     return { status: "error", message: "Failed to fetch data", data: [] };
   }
 }
@@ -20,18 +20,16 @@ export async function getManualKepOpr() {
 
 export async function getManualKepSpv() {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/manual-kep/spv", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}), // required for php://input decode
-      cache: "no-store", // ensure always fresh data
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return whatever PHP sends
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: MOCK_MANUAL_KEP_SPV 
+    };
   } catch (error) {
-    console.error("Error fetching nasabah transaksi mencurigakan:", error);
+    console.error("Error fetching manual kep spv:", error);
     return { status: "error", message: "Failed to fetch data", data: [] };
   }
 }
@@ -45,16 +43,14 @@ export async function otorisasiManualKep(data: {
   alasan_reject?: string;
 }) {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/manual-kep/otorisasi", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json();
+    return { 
+      status: "success", 
+      message: `Data berhasil ${data.action === "approve" ? "diapprove" : data.action === "reject" ? "direject" : "disimpan"}`, 
+      data: null 
+    };
   } catch (error) {
     console.error("Error otorisasi manual kep:", error);
     return { status: "error", message: "Failed to process action", data: null };
@@ -67,16 +63,14 @@ export async function otorisasiManualKepSpv(data: {
   otor_by_kep_spv: string;
 }) {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/manual-kep/otorisasi-spv", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json();
+    return { 
+      status: "success", 
+      message: `Data berhasil ${data.action === "approve" ? "diapprove" : "direject"}`, 
+      data: null 
+    };
   } catch (error) {
     console.error("Error otorisasi manual kep supervisor:", error);
     return { status: "error", message: "Failed to process action", data: null };

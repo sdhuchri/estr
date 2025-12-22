@@ -1,9 +1,8 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import FormField, { Input } from "@/components/common/FormField";
+import FormField from "@/components/common/FormField";
 import MultiSelect from "@/components/common/MultiSelect";
-import { Settings, Flag, Search, X } from "lucide-react";
+import { Flag, Search, X } from "lucide-react";
 import { Toast } from "primereact/toast";
 import ConfirmDialog from "@/components/common/ConfirmDialog";
 import { insertParameterPrioritas, getParameterPrioritas, getListIndikator } from "@/services/parameterRedflag";
@@ -30,7 +29,6 @@ interface SettingPrioritasClientProps {
 }
 
 export default function SettingPrioritasClient({ initialData }: SettingPrioritasClientProps) {
-  const router = useRouter();
   const toast = useRef<Toast>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -153,6 +151,21 @@ export default function SettingPrioritasClient({ initialData }: SettingPrioritas
     if (!newChip.trim()) return;
 
     const trimmedChip = newChip.trim().toUpperCase();
+    
+    // Check max length for frequency fields (25 characters)
+    if (field === 'high' || field === 'medium' || field === 'low' || 
+        field === 'highSama' || field === 'mediumSama' || field === 'lowSama') {
+      if (trimmedChip.length > 25) {
+        toast.current?.show({
+          severity: "warn",
+          summary: "Peringatan!",
+          detail: "Maksimal 25 karakter per nilai!",
+          life: 3000
+        });
+        return;
+      }
+    }
+    
     const currentChips = stringToChips(parameters[field]);
 
     // Check if chip already exists
@@ -271,6 +284,7 @@ export default function SettingPrioritasClient({ initialData }: SettingPrioritas
                   onKeyDown={handleKeyDown}
                   onBlur={handleBlur}
                   placeholder={chips.length === 0 ? placeholder : ""}
+                  maxLength={25}
                   className="flex-1 min-w-[100px] border-none outline-none text-sm"
                 />
               )}
@@ -279,8 +293,8 @@ export default function SettingPrioritasClient({ initialData }: SettingPrioritas
         </div>
         <p className="text-xs text-gray-500 mt-1">
           {maxChips === 1 
-            ? "Tekan Enter atau koma untuk menambah nilai (maksimal 1 nilai)"
-            : "Tekan Enter atau koma untuk menambah nilai"}
+            ? "Tekan Enter atau koma untuk menambah nilai (maksimal 1 nilai, 25 karakter)"
+            : "Tekan Enter atau koma untuk menambah nilai (maksimal 25 karakter)"}
         </p>
       </FormField>
     );
@@ -482,6 +496,7 @@ export default function SettingPrioritasClient({ initialData }: SettingPrioritas
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                    maxLength={255}
                   />
                 </div>
 
@@ -583,7 +598,7 @@ export default function SettingPrioritasClient({ initialData }: SettingPrioritas
                           );
                         }
 
-                        // Fallback to regular Input (shouldn't reach here)
+                        // Fallback to regular input (shouldn't reach here)
                         return (
                           <FormField key={fieldIndex} label={field.label}>
                             <div className="relative">
@@ -592,11 +607,13 @@ export default function SettingPrioritasClient({ initialData }: SettingPrioritas
                                   {field.operator}
                                 </span>
                               )}
-                              <Input
+                              <input
+                                type="text"
                                 value={parameters[field.key]}
-                                onChange={(e) => handleInputChange(field.key, e.target.value)}
-                                className={field.operator ? 'pl-8' : ''}
+                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(field.key, e.target.value)}
+                                className={`w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${field.operator ? 'pl-8' : ''}`}
                                 placeholder={field.placeholder || "Masukkan nilai..."}
+                                maxLength={25}
                               />
                             </div>
                           </FormField>

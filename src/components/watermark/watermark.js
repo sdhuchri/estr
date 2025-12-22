@@ -1,7 +1,7 @@
 class Watermark {
     static defaultOptions = {
         targetSelector: "", // Selector elemen yang ingin diberi watermark
-        imageUrl: "img/BCA_Syariah_2.png",
+        imageUrl: "", // Removed logo for demo
         text: "",
         opacity: 0.12,
         size: 380, // Ukuran gambar
@@ -30,12 +30,21 @@ class Watermark {
         return new Watermark(options);
     }
 
+    // Method to destroy all instances
+    destroy() {
+        if (this.instances) {
+            this.instances.forEach(instance => instance.destroy());
+            this.instances = [];
+        }
+    }
 }
 
 class WatermarkInstance {
     constructor(target, options) {
         this.options = options;
         this.target = target;
+        this.resizeTimeout = null;
+        this.isDestroyed = false;
 
         this.initCanvas();
         this.loadImage();
@@ -60,6 +69,8 @@ class WatermarkInstance {
     }
 
     resizeCanvas() {
+        if (this.isDestroyed) return;
+        
         this.canvas.width = this.target.clientWidth;
         this.canvas.height = this.target.clientHeight;
 
@@ -71,11 +82,15 @@ class WatermarkInstance {
     loadImage() {
         this.img = new Image();
         this.img.src = this.options.imageUrl;
-        this.img.onload = () => this.drawWatermark();
+        this.img.onload = () => {
+            if (!this.isDestroyed) {
+                this.drawWatermark();
+            }
+        };
     }
 
     drawWatermark() {
-        if (!this.img || !this.img.complete) return;
+        if (!this.img || !this.img.complete || this.isDestroyed) return;
 
         const { spacing, size, rotate, text, font, textColor } = this.options;
         const ctx = this.ctx;
@@ -107,8 +122,50 @@ class WatermarkInstance {
     }
 
     observeResize() {
-        const resizeObserver = new ResizeObserver(() => this.resizeCanvas());
-        resizeObserver.observe(this.target);
+        // Debounce resize to prevent excessive re-renders (especially in Chrome)
+        const debouncedResize = () => {
+            if (this.isDestroyed) return;
+            
+            // Clear previous timeout
+            if (this.resizeTimeout) {
+                clearTimeout(this.resizeTimeout);
+            }
+            
+            // Set new timeout with 150ms delay
+            this.resizeTimeout = setTimeout(() => {
+                if (!this.isDestroyed) {
+                    this.resizeCanvas();
+                }
+            }, 150);
+        };
+
+        this.resizeObserver = new ResizeObserver(debouncedResize);
+        this.resizeObserver.observe(this.target);
+    }
+
+    destroy() {
+        this.isDestroyed = true;
+        
+        // Clear timeout
+        if (this.resizeTimeout) {
+            clearTimeout(this.resizeTimeout);
+            this.resizeTimeout = null;
+        }
+        
+        // Disconnect observer
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+            this.resizeObserver = null;
+        }
+        
+        // Remove canvas
+        if (this.canvas && this.canvas.parentNode) {
+            this.canvas.parentNode.removeChild(this.canvas);
+        }
+        
+        this.canvas = null;
+        this.ctx = null;
+        this.img = null;
     }
 }
 

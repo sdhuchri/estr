@@ -1,37 +1,47 @@
 // services/parameterRedflagService.ts
+import { 
+  MOCK_PARAMETER_REDFLAG, 
+  MOCK_PARAMETER_KODE_TRANSAKSI,
+  MOCK_PARAMETER_TRANSAKSI_UMUM,
+  MOCK_PARAMETER_PRIORITAS,
+  MOCK_PARAMETER_AKTIVASI,
+  MOCK_PARAMETER_WATCHLIST,
+  MOCK_INDIKATOR,
+  simulateDelay 
+} from "@/data/mockData";
 
 export async function getParameterRedflag(status?: string) {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-redflag", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ status }),
-      cache: "no-store", // recommended to always fetch fresh data
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    // Filter by status if provided
+    let filteredData = MOCK_PARAMETER_REDFLAG;
+    if (status) {
+      filteredData = MOCK_PARAMETER_REDFLAG.filter(item => item.STATUS === status);
+    }
+
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: filteredData 
+    };
   } catch (error) {
     console.error("Error fetching parameter redflag:", error);
     return { status: "error", message: "Failed to fetch data", data: [] };
   }
 }
 
-// services/parameterRedflagOtorisasiService.ts
-
 export async function getParameterRedflagOtorisasi() {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-redflag-otorisasi", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-      cache: "no-store", // always fetch fresh data
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: [] // No pending otorisasi in demo
+    };
   } catch (error) {
     console.error("Error fetching parameter redflag otorisasi:", error);
     return { status: "error", message: "Failed to fetch data", data: [] };
@@ -40,16 +50,13 @@ export async function getParameterRedflagOtorisasi() {
 
 export async function otorisasiParameterRedflag(action: "approve" | "reject") {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-redflag-otorisasi-action", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ action }),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: `Parameter redflag berhasil ${action === "approve" ? "diapprove" : "direject"}` 
+    };
   } catch (error) {
     console.error("Error otorisasi parameter redflag:", error);
     return { status: "error", message: "Failed to process authorization" };
@@ -85,63 +92,57 @@ export async function insertParameterRedflag(data: {
   db_suspect_keyword_keterangan: string;
 }) {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-redflag-hist-insert", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: "Parameter redflag berhasil disimpan" 
+    };
   } catch (error) {
     console.error("Error inserting parameter redflag:", error);
     return { status: "error", message: "Failed to insert data" };
   }
 }
 
-// services/parameterKodeTransaksiService.ts
-
+// ==================== KODE TRANSAKSI ====================
 export async function getParameterKodeTransaksi(redflag?: string) {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-kode-transaksi", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ redflag }),
-      cache: "no-store", // always fetch fresh data
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response as is
+    // Filter by redflag if provided
+    let filteredData = MOCK_PARAMETER_KODE_TRANSAKSI;
+    if (redflag) {
+      filteredData = MOCK_PARAMETER_KODE_TRANSAKSI.filter(item => item.JENIS_REDFLAG === redflag);
+    }
+
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: filteredData 
+    };
   } catch (error) {
     console.error("Error fetching parameter kode transaksi:", error);
     return { status: "error", message: "Failed to fetch data", data: [] };
   }
 }
 
-// services/parameterTransaksiUmumService.ts
-
 export async function getParameterTransaksiUmum() {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/kode-transaksi-umum", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}), // no filter, required for PHP input decode
-      cache: "no-store", // always fetch fresh data
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: MOCK_PARAMETER_TRANSAKSI_UMUM 
+    };
   } catch (error) {
     console.error("Error fetching parameter transaksi umum:", error);
     return { status: "error", message: "Failed to fetch data", data: [] };
   }
 }
-
-// services/updateParameterKodeTransaksiService.ts
 
 export async function updateParameterKodeTransaksi(data: {
   jenis_redflag: string;
@@ -153,55 +154,50 @@ export async function updateParameterKodeTransaksi(data: {
   kodetran_nontartun?: string;
 }) {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-kode-transaksi-update", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: "Parameter kode transaksi berhasil diupdate" 
+    };
   } catch (error) {
     console.error("Error updating parameter kode transaksi:", error);
     return { status: "error", message: "Failed to update data" };
   }
 }
 
-// services/parameterPrioritasService.ts
-
+// ==================== PRIORITAS ====================
 export async function getParameterPrioritas() {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-prioritas", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store", // always fetch fresh data
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: MOCK_PARAMETER_PRIORITAS 
+    };
   } catch (error) {
     console.error("Error fetching parameter prioritas:", error);
     return { status: "error", message: "Failed to fetch data", data: null };
   }
 }
 
-
-// services/parameterPrioritasService.ts
-
 export async function getParameterPrioritasOtorisasi() {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-prioritas-otorisasi", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store", // always fetch fresh data
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: {
+        status: "input",
+        STATUS: "input",
+        ...MOCK_PARAMETER_PRIORITAS
+      }
+    };
   } catch (error) {
     console.error("Error fetching parameter prioritas:", error);
     return { status: "error", message: "Failed to fetch data", data: null };
@@ -226,16 +222,13 @@ export async function updateParameterPrioritas(data: {
   };
 }) {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-prioritas", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: "Parameter prioritas berhasil diupdate" 
+    };
   } catch (error) {
     console.error("Error updating parameter prioritas:", error);
     return { status: "error", message: "Failed to update data" };
@@ -261,16 +254,13 @@ export async function insertParameterPrioritas(data: {
   user_input: string;
 }) {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-prioritas-insert", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: "Parameter prioritas berhasil disimpan" 
+    };
   } catch (error) {
     console.error("Error inserting parameter prioritas:", error);
     return { status: "error", message: "Failed to insert data" };
@@ -282,43 +272,35 @@ export async function otorisasiParameterPrioritas(data: {
   user_otor: string;
 }) {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-prioritas-otorisasi-action", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: `Parameter prioritas berhasil ${data.action === "approve" ? "diapprove" : "direject"}` 
+    };
   } catch (error) {
     console.error("Error otorisasi parameter prioritas:", error);
     return { status: "error", message: "Failed to process authorization" };
   }
 }
 
-
-// services/parameterAktivasiService.ts
-
+// ==================== AKTIVASI ====================
 export async function getParameterAktivasi() {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-aktivasi", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-      cache: "no-store", // always fetch fresh data
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: MOCK_PARAMETER_AKTIVASI 
+    };
   } catch (error) {
     console.error("Error fetching parameter aktivasi:", error);
     return { status: "error", message: "Failed to fetch data", data: null };
   }
 }
-
 
 export async function insertParameterAktivasi(data: {
   passby: string;
@@ -342,76 +324,84 @@ export async function insertParameterAktivasi(data: {
   user_input: string;
 }) {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-aktivasi-upsert", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: "Parameter aktivasi berhasil disimpan" 
+    };
   } catch (error) {
     console.error("Error inserting parameter aktivasi:", error);
     return { status: "error", message: "Failed to insert data" };
   }
 }
 
-
 export async function getParameterAktivasiOtorisasi() {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-aktivasi-otorisasi", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-      cache: "no-store", // always fetch fresh data
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: {
+        STATUS: "input",
+        PASSBY: "ON",
+        PEP: "ON",
+        ET: "ON",
+        NRT: "ON",
+        DORMAN: "ON",
+        MTM: "ON",
+        BOP: "ON",
+        RBU: "ON",
+        RBU2: "ON",
+        RDS: "ON",
+        TUN: "ON",
+        DOR: "ON",
+        EXCEED_INCOME: "ON",
+        TARIK_SETOR: "ON",
+        JUDOL: "ON",
+        DB_SUSPECT: "ON",
+        DB_TERORIS: "ON",
+        TRF_SUSPECT: "ON"
+      }
+    };
   } catch (error) {
     console.error("Error fetching parameter aktivasi otorisasi:", error);
     return { status: "error", message: "Failed to fetch data", data: null };
   }
 }
 
-
 export async function otorisasiParameterAktivasi(data: {
   action: "approve" | "reject";
   user_otor: string;
 }) {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-aktivasi-otorisasi-action", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: `Parameter aktivasi berhasil ${data.action === "approve" ? "diapprove" : "direject"}` 
+    };
   } catch (error) {
     console.error("Error otorisasi parameter aktivasi:", error);
     return { status: "error", message: "Failed to process authorization" };
   }
 }
 
-
+// ==================== WATCHLIST ====================
 export async function getParameterWatchlist() {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/parameter-watchlist", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: MOCK_PARAMETER_WATCHLIST 
+    };
   } catch (error) {
     console.error("Error fetching parameter watchlist:", error);
     return { status: "error", message: "Failed to fetch data", data: [] };
@@ -420,16 +410,17 @@ export async function getParameterWatchlist() {
 
 export async function getListIndikator() {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/setting/list-indikator", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // return PHP response
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: { 
+        data: MOCK_INDIKATOR, 
+        total: MOCK_INDIKATOR.length 
+      } 
+    };
   } catch (error) {
     console.error("Error fetching list indikator:", error);
     return { status: "error", message: "Failed to fetch data", data: { data: [], total: 0 } };

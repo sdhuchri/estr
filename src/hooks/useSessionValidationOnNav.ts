@@ -23,7 +23,7 @@ export function useSessionValidationOnNav() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000);
 
-        const response = await fetch("/estr/api/auth/validate", {
+        const response = await fetch("/estr-api/auth/validate", {
           method: "GET",
           credentials: "include",
           signal: controller.signal,

@@ -142,6 +142,7 @@ interface ListboxProps {
   disabled?: boolean;
   className?: string;
   dropUp?: boolean;
+  roundedClass?: string;
 }
 
 export function CustomListbox({
@@ -152,7 +153,8 @@ export function CustomListbox({
   error = false,
   disabled = false,
   className = "",
-  dropUp = false
+  dropUp = false,
+  roundedClass = "rounded"
 }: ListboxProps) {
   const selectedOption = options.find(option => option.value === value);
 
@@ -160,8 +162,7 @@ export function CustomListbox({
     <Listbox value={value} onChange={onChange} disabled={disabled}>
       <div className="relative">
         <Listbox.Button
-          className={`relative w-full cursor-default rounded border py-2 pl-3 pr-10 text-left focus:outline-none focus:ring-2 focus:ring-blue-500 ${error ? 'border-red-500' : 'border-gray-300'
-            } ${disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'bg-white hover:border-gray-400'} ${className}`}
+          className={`relative w-full cursor-default ${roundedClass} border ${error ? 'border-red-500' : 'border-gray-300'} bg-white py-2 pl-3 pr-10 text-left focus:outline-none focus:ring-2 focus:ring-blue-500 ${disabled ? 'bg-gray-100 text-gray-500 cursor-not-allowed' : 'hover:border-gray-400'} ${className}`}
         >
           <span className="block truncate text-sm">
             {selectedOption ? selectedOption.label : placeholder}

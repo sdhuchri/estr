@@ -1,56 +1,56 @@
-// services/nasabahService.ts
+// services/listReject.ts
+import { MOCK_LIST_REJECT_AKTIF, simulateDelay } from "@/data/mockData";
 
 export async function getListRejectTidakAktif(cabang: string) {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/list-reject/tidak-aktif", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ cabang }),
-      cache: "no-store", // optional (recommended for fresh data)
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // directly return PHP response
+    // Return empty array for tidak aktif (inactive rejects)
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: [] 
+    };
   } catch (error) {
-    console.error("Error fetching nasabah:", error);
+    console.error("Error fetching list reject tidak aktif:", error);
     return { status: "error", message: "Failed to fetch data", data: [] };
   }
 }
 
 
-// services/nasabahService.ts
-
 export async function getListRejectAktif(cabang: string) {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/list-reject/aktif", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ cabang }),
-      cache: "no-store", // optional (recommended for fresh data)
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json(); // directly return PHP response
+    // Filter by cabang if not "999"
+    let filteredData = MOCK_LIST_REJECT_AKTIF;
+    if (cabang !== "999") {
+      filteredData = MOCK_LIST_REJECT_AKTIF.filter(item => item.CABANG === cabang);
+    }
+
+    return { 
+      status: "success", 
+      message: "Success", 
+      data: filteredData 
+    };
   } catch (error) {
-    console.error("Error fetching nasabah:", error);
+    console.error("Error fetching list reject aktif:", error);
     return { status: "error", message: "Failed to fetch data", data: [] };
   }
 }
 
 export async function updateStatusListReject(no: string[]) {
   try {
-    const res = await fetch("http://10.125.22.11:8080/api/list-reject/update-status", {
-      method: "POST",
-      headers: { 
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ no }),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    return await res.json();
+    return { 
+      status: "success", 
+      message: "Status berhasil diupdate", 
+      data: null 
+    };
   } catch (error) {
     console.error("Error updating status:", error);
     return { status: "error", message: "Failed to update status", data: null };

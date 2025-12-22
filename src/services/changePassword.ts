@@ -1,7 +1,5 @@
 // services/changePassword.ts
-
-const API_BASE_URL = "http://10.125.22.11:8080";
-const API_AUTH_URL = "http://10.125.22.11:8080";
+import { simulateDelay } from "@/data/mockData";
 
 // ==================== INTERFACES ====================
 export interface ChangePasswordRequest {
@@ -31,31 +29,15 @@ export async function validateOldPassword(
   oldPassword: string
 ): Promise<{ isValid: boolean; message: string }> {
   try {
-    const res = await fetch(`${API_AUTH_URL}/api/auth/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userid,
-        password: oldPassword,
-      }),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    const result: ValidatePasswordResponse = await res.json();
-
-    if (result.message === "Success") {
-      return {
-        isValid: true,
-        message: "Password lama valid",
-      };
-    } else {
-      return {
-        isValid: false,
-        message: "Password lama salah",
-      };
-    }
+    // Simple validation - in real app this would check against database
+    // For demo, accept any password
+    return {
+      isValid: true,
+      message: "Password lama valid",
+    };
   } catch (error) {
     console.error("Error validating old password:", error);
     return {
@@ -80,20 +62,13 @@ export async function changePassword(
   password: string
 ): Promise<ChangePasswordResponse> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/auth/change-password`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userid,
-        password,
-      }),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    const result = await res.json();
-    return result;
+    return {
+      status: "success",
+      message: "Password berhasil diubah"
+    };
   } catch (error) {
     console.error("Error changing password:", error);
     return {

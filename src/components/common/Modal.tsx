@@ -86,7 +86,7 @@ export default function Modal({
     const timeout = setTimeout(() => {
       Watermark.init({
         targetSelector: ".modal-watermark-area",
-        imageUrl: "/estr/images/logo/BCA_Syariah_logo.png",
+        imageUrl: "", // Removed logo for demo
         text: watermarkText,
         opacity: 0.1,
       });

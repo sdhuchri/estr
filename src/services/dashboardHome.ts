@@ -1,6 +1,5 @@
 // services/dashboardHome.ts
-
-const API_BASE_URL = "http://10.125.22.11:8080";
+import { MOCK_DASHBOARD_DATA, simulateDelay } from "@/data/mockData";
 
 // ==================== INTERFACES ====================
 export interface DashboardCabangData {
@@ -42,30 +41,31 @@ export interface DashboardResponse {
  * Get dashboard home statistics
  * @param periodeAwal - Start date in format "YYYY-MM-DD"
  * @param periodeAkhir - End date in format "YYYY-MM-DD"
+ * @param kodeCabang - Optional branch code. If not provided, returns data for all branches
  * @returns Promise with dashboard data
  * 
  * @example
+ * // Get all branches
  * const response = await getDashboardHome("2025-01-01", "2025-12-31");
+ * 
+ * // Get specific branch
+ * const response = await getDashboardHome("2025-01-01", "2025-12-31", "001");
  */
 export async function getDashboardHome(
   periodeAwal: string,
-  periodeAkhir: string
+  periodeAkhir: string,
+  kodeCabang?: string
 ): Promise<DashboardResponse> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/dashboard/home`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        periode_awal: periodeAwal,
-        periode_akhir: periodeAkhir,
-      }),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(500);
 
-    const result = await res.json();
-    return result;
+    // Return mock dashboard data
+    return {
+      status: "success",
+      message: "Success",
+      data: MOCK_DASHBOARD_DATA
+    };
   } catch (error) {
     console.error("Error fetching dashboard home data:", error);
     return {

@@ -76,14 +76,32 @@ const wrapText = (
         lines.push(currentLine);
         currentLine = word;
       } else {
-        let truncatedWord = word;
-        while (
-          font.widthOfTextAtSize(truncatedWord + "...", fontSize) > maxWidth - 8 &&
-          truncatedWord.length > 1
-        ) {
-          truncatedWord = truncatedWord.slice(0, -1);
+        // If a single word is too long, break it into chunks without truncation
+        const wordWidth = font.widthOfTextAtSize(word, fontSize);
+        if (wordWidth > maxWidth - 8) {
+          let remainingWord = word;
+          while (remainingWord.length > 0) {
+            let chunkSize = remainingWord.length;
+            let chunk = remainingWord;
+            
+            // Find the maximum chunk that fits
+            while (chunkSize > 0 && font.widthOfTextAtSize(chunk, fontSize) > maxWidth - 8) {
+              chunkSize--;
+              chunk = remainingWord.substring(0, chunkSize);
+            }
+            
+            if (chunkSize === 0) {
+              // If even a single character doesn't fit, take at least one character
+              chunkSize = 1;
+              chunk = remainingWord.substring(0, 1);
+            }
+            
+            lines.push(chunk);
+            remainingWord = remainingWord.substring(chunkSize);
+          }
+        } else {
+          currentLine = word;
         }
-        lines.push(truncatedWord + (truncatedWord !== word ? "..." : ""));
       }
     }
   }
@@ -105,7 +123,7 @@ export async function generatePDF(options: PDFGeneratorOptions): Promise<Blob> {
     signatures,
     fileName,
     orientation = "landscape",
-    watermarkImagePath = "/estr/images/logo/BCA_Syariah_logo.png",
+    watermarkImagePath = "", // Removed logo for demo
     watermarkText,
     customPageSize,
     titleSize = 18,
@@ -194,6 +212,11 @@ export async function generatePDF(options: PDFGeneratorOptions): Promise<Blob> {
 
   // Header information
   if (headerInfo) {
+    // Calculate total table width for alignment
+    const totalTableWidth = columns.reduce((sum, col) => sum + col.width, 0);
+    const tableStartX = (pageWidth - totalTableWidth) / 2;
+    const tableEndX = tableStartX + totalTableWidth;
+    
     const lineHeight = 18;
     const maxLines = Math.max(
       headerInfo.left.length,
@@ -201,20 +224,20 @@ export async function generatePDF(options: PDFGeneratorOptions): Promise<Blob> {
     );
 
     for (let i = 0; i < maxLines; i++) {
-      // Left side
+      // Left side - align with table start
       if (headerInfo.left[i]) {
         const { label, value } = headerInfo.left[i];
-        page.drawText(label, { x: 30, y, size: 10, font: boldFont });
+        page.drawText(label, { x: tableStartX, y, size: 10, font: boldFont });
         const labelWidth = boldFont.widthOfTextAtSize(label, 10);
         page.drawText(value, {
-          x: 30 + labelWidth,
+          x: tableStartX + labelWidth,
           y,
           size: 10,
           font,
         });
       }
 
-      // Right side
+      // Right side - align with table end
       if (headerInfo.right[i]) {
         const { label, value } = headerInfo.right[i];
         const labelWidth = boldFont.widthOfTextAtSize(label, 10);
@@ -222,13 +245,13 @@ export async function generatePDF(options: PDFGeneratorOptions): Promise<Blob> {
         const totalWidth = labelWidth + valueWidth;
 
         page.drawText(label, {
-          x: pageWidth - totalWidth - 30,
+          x: tableEndX - totalWidth,
           y,
           size: 10,
           font: boldFont,
         });
         page.drawText(value, {
-          x: pageWidth - totalWidth - 30 + labelWidth,
+          x: tableEndX - totalWidth + labelWidth,
           y,
           size: 10,
           font,
@@ -241,8 +264,9 @@ export async function generatePDF(options: PDFGeneratorOptions): Promise<Blob> {
 
   y -= 20;
 
-  // Table headers
-  const rowHeight = 20;
+  // Table headers - increased height for multi-line support
+  const headerRowHeight = 30;
+  const dataRowHeight = 20;
   const marginLeft = 30;
   const marginRight = 30;
   
@@ -258,28 +282,35 @@ export async function generatePDF(options: PDFGeneratorOptions): Promise<Blob> {
       x,
       y,
       width: col.width,
-      height: rowHeight,
+      height: headerRowHeight,
       color: rgb(0.2, 0.4, 0.8),
       borderColor: rgb(0.7, 0.7, 0.7),
       borderWidth: 0.5,
     });
 
-    // Calculate text position based on alignment
-    const headerTextWidth = boldFont.widthOfTextAtSize(col.header, 8);
-    let textX = x + 4; // default left align
-    
-    if (col.align === "center") {
-      textX = x + (col.width - headerTextWidth) / 2;
-    } else if (col.align === "right") {
-      textX = x + col.width - headerTextWidth - 4;
-    }
+    // Wrap header text if needed
+    const headerLines = wrapText(col.header, col.width, 8, boldFont);
+    const lineHeight = 10;
+    const totalTextHeight = headerLines.length * lineHeight;
+    const startY = y + (headerRowHeight + totalTextHeight) / 2 - lineHeight;
 
-    page.drawText(col.header, {
-      x: textX,
-      y: y + 8,
-      size: 8,
-      font: boldFont,
-      color: rgb(1, 1, 1),
+    headerLines.forEach((line, lineIndex) => {
+      const headerTextWidth = boldFont.widthOfTextAtSize(line, 8);
+      let textX = x + 4; // default left align
+      
+      if (col.align === "center") {
+        textX = x + (col.width - headerTextWidth) / 2;
+      } else if (col.align === "right") {
+        textX = x + col.width - headerTextWidth - 4;
+      }
+
+      page.drawText(line, {
+        x: textX,
+        y: startY - (lineIndex * lineHeight),
+        size: 8,
+        font: boldFont,
+        color: rgb(1, 1, 1),
+      });
     });
 
     x += col.width;
@@ -297,7 +328,7 @@ export async function generatePDF(options: PDFGeneratorOptions): Promise<Blob> {
       wrapText(String(text), columns[i].width, 8, font)
     );
     const maxLines = Math.max(...wrappedTexts.map((lines) => lines.length));
-    const dynamicRowHeight = Math.max(rowHeight, maxLines * 12);
+    const dynamicRowHeight = Math.max(dataRowHeight, maxLines * 12);
 
     // Check if new page needed
     if (y - dynamicRowHeight < 60) {

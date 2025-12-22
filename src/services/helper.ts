@@ -1,6 +1,5 @@
 // services/cabangService.ts
-
-const API_BASE_URL = "http://10.125.22.11:8080";
+import { MOCK_CABANG, MOCK_INDIKATOR, simulateDelay } from "@/data/mockData";
 
 // ==================== INTERFACES ====================
 export interface CabangData {
@@ -31,17 +30,23 @@ export interface CabangResponse {
  */
 export async function getAllCabang(kodeCabang: string): Promise<CabangResponse> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/helper/cabang`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ kode_cabang: kodeCabang }),
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(300);
 
-    const result = await res.json();
-    return result;
+    // Filter cabang based on kode_cabang
+    let filteredCabang = MOCK_CABANG;
+    
+    if (kodeCabang !== "999") {
+      filteredCabang = MOCK_CABANG.filter(
+        (c) => c.kode_cabang === kodeCabang || c.induk_cabang === kodeCabang
+      );
+    }
+
+    return {
+      status: 200,
+      message: "Success",
+      data: filteredCabang
+    };
   } catch (error) {
     console.error("Error fetching cabang data:", error);
     return {
@@ -114,16 +119,14 @@ export interface IndikatorResponse {
  */
 export async function getAllIndikator(): Promise<IndikatorResponse> {
   try {
-    const res = await fetch(`${API_BASE_URL}/api/helper/indikator`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      cache: "no-store",
-    });
+    // Simulate API delay
+    await simulateDelay(300);
 
-    const result = await res.json();
-    return result;
+    return {
+      status: 200,
+      message: "Success",
+      data: MOCK_INDIKATOR
+    };
   } catch (error) {
     console.error("Error fetching indikator data:", error);
     return {
@@ -150,4 +153,53 @@ export async function getIndikatorOptions() {
   }
   
   return [];
+}
+
+// ==================== PRIORITAS ====================
+export interface PrioritasResponse {
+  status: string;
+  message: string;
+  data?: {
+    prioritas: string;
+  };
+}
+
+/**
+ * Get prioritas/skala berdasarkan redflag/indikator
+ * @param redflag - Kode indikator (PASSBY, ET, BOP, dll)
+ * @returns Promise dengan data prioritas
+ * 
+ * @example
+ * const response = await getPrioritas("PASSBY");
+ * // Returns: { status: "success", message: "...", data: { prioritas: "MEDIUM" } }
+ */
+export async function getPrioritas(redflag: string): Promise<PrioritasResponse> {
+  try {
+    // Simulate API delay
+    await simulateDelay(300);
+
+    // Determine prioritas based on redflag
+    const prioritasMap: Record<string, string> = {
+      "PASSBY": "HIGH",
+      "ET": "MEDIUM",
+      "BOP": "HIGH",
+      "CASH": "MEDIUM",
+      "STRUCT": "HIGH",
+      "UNUSUAL": "LOW"
+    };
+
+    const prioritas = prioritasMap[redflag] || "MEDIUM";
+
+    return {
+      status: "success",
+      message: "Success",
+      data: { prioritas }
+    };
+  } catch (error) {
+    console.error("Error fetching prioritas data:", error);
+    return {
+      status: "error",
+      message: "Failed to fetch prioritas data",
+    };
+  }
 }

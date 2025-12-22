@@ -46,11 +46,13 @@ export default function ManualCabangForm({
     }).replace(/\s/g, "-");
   };
 
-  // Handle numeric input only
-  const handleNumericInput = (field: string, value: string) => {
+  // Handle numeric input only with max length
+  const handleNumericInput = (field: string, value: string, maxLength: number = 50) => {
     // Only allow numeric characters
     const numericValue = value.replace(/[^0-9]/g, '');
-    onChange(field, numericValue);
+    // Limit to maxLength characters
+    const limitedValue = numericValue.slice(0, maxLength);
+    onChange(field, limitedValue);
   };
 
   // Handle indikator change and auto-fill keterangan
@@ -90,22 +92,30 @@ export default function ManualCabangForm({
         <FormField label="No CIF" required>
           <Input
             value={formData.noCif}
-            onChange={(e) => handleNumericInput('noCif', e.target.value)}
+            onChange={(e) => handleNumericInput('noCif', e.target.value, 50)}
             disabled={isReadOnly('noCif')}
             placeholder="Masukkan No CIF"
             type="text"
             inputMode="numeric"
+            maxLength={50}
           />
+          <p className="text-xs text-gray-500 mt-1">
+            Maksimal 50 karakter ({formData.noCif.length}/50)
+          </p>
         </FormField>
         <FormField label="No Rekening">
           <Input
             value={formData.noRek}
-            onChange={(e) => handleNumericInput('noRek', e.target.value)}
+            onChange={(e) => handleNumericInput('noRek', e.target.value, 50)}
             disabled={isReadOnly('noRek')}
             placeholder="Masukkan No Rekening"
             type="text"
             inputMode="numeric"
+            maxLength={50}
           />
+          <p className="text-xs text-gray-500 mt-1">
+            Maksimal 50 karakter ({formData.noRek.length}/50)
+          </p>
         </FormField>
       </div>
 
@@ -116,6 +126,7 @@ export default function ManualCabangForm({
             onChange={(e) => onChange('namaNasabah', e.target.value)}
             disabled={isReadOnly('namaNasabah')}
             placeholder="Masukkan Nama Nasabah"
+            maxLength={255}
           />
         </FormField>
         <FormField label="Cabang" required>
@@ -167,6 +178,14 @@ export default function ManualCabangForm({
         />
       </FormField>
 
+      <FormField label="Keterangan" className="mb-4">
+        <Input
+          value="Redflag Manual by Cabang"
+          onChange={() => {}}
+          disabled={true}
+        />
+      </FormField>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <FormField label="Tgl Menghubungi Nasabah" required>
           <TailwindDatePicker
@@ -212,6 +231,7 @@ export default function ManualCabangForm({
           rows={4}
           placeholder="Masukkan penjelasan..."
           disabled={isReadOnly('penjelasanCSO')}
+          maxLength={999}
         />
       </FormField>
 
@@ -222,6 +242,7 @@ export default function ManualCabangForm({
           rows={4}
           placeholder="Masukkan penjelasan..."
           disabled={isReadOnly('penjelasanSPV')}
+          maxLength={999}
         />
       </FormField>
 
@@ -232,6 +253,7 @@ export default function ManualCabangForm({
           rows={4}
           placeholder="Masukkan penjelasan..."
           disabled={isReadOnly('penjelasanKepatuhan')}
+          maxLength={999}
         />
       </FormField>
     </>
