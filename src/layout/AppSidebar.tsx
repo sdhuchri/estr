@@ -362,34 +362,11 @@ const AppSidebar: React.FC = () => {
           className={`py-8 flex flex-col ${!isExpanded && !isHovered ? "lg:items-center" : "items-start"
             }`}
         >
-          <Link href="/">
+          <Link href="/" className="flex items-center">
             {isExpanded || isHovered || isMobileOpen ? (
-              <>
-                <Image
-                  className="dark:hidden"
-                  src="/images/logo/bcas-logo.png"
-                  alt="Logo"
-                  width={230}
-                  height={40}
-                  unoptimized
-                />
-                <Image
-                  className="hidden dark:block"
-                  src="/images/logo/bca_logo.png"
-                  alt="Logo"
-                  width={450}
-                  height={200}
-                  unoptimized
-                />
-              </>
+              <h1 className="text-2xl font-bold text-white">E-STR Demo</h1>
             ) : (
-              <Image
-                src="/images/logo/bca_logo.png"
-                alt="Logo"
-                width={450}
-                height={200}
-                unoptimized
-              />
+              <h1 className="text-xl font-bold text-white">E-STR</h1>
             )}
           </Link>
           {branchName && (isExpanded || isHovered || isMobileOpen) && (
