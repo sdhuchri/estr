@@ -2,7 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   reactStrictMode: false,
-  basePath: "/estr",
+  // basePath removed for Vercel deployment - app accessible at root URL
   // Enable Cache Components (PPR) - Next.js 16 syntax
   cacheComponents: true,
   // Image configuration
