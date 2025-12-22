@@ -44,23 +44,31 @@ export async function getJobLogs() {
     return { 
       status: "success", 
       message: "Success", 
-      data: [
-        {
-          filename: "job_passby_2025-01-10.log",
-          size: "2.5 KB",
-          modified: "2025-01-10 10:30:00"
-        },
-        {
-          filename: "job_et_2025-01-10.log",
-          size: "1.8 KB",
-          modified: "2025-01-10 10:35:00"
-        },
-        {
-          filename: "job_bop_2025-01-10.log",
-          size: "3.2 KB",
-          modified: "2025-01-10 10:40:00"
-        }
-      ]
+      data: {
+        log_files: [
+          {
+            filename: "job_passby_2025-01-10.log",
+            job_name: "Job1_PASSBY",
+            modified_at: "2025-01-10 10:30:00",
+            size: 2560,
+            size_kb: "2.5 KB"
+          },
+          {
+            filename: "job_et_2025-01-10.log",
+            job_name: "Job4_ET",
+            modified_at: "2025-01-10 10:35:00",
+            size: 1843,
+            size_kb: "1.8 KB"
+          },
+          {
+            filename: "job_bop_2025-01-10.log",
+            job_name: "Job7_BOP",
+            modified_at: "2025-01-10 10:40:00",
+            size: 3276,
+            size_kb: "3.2 KB"
+          }
+        ]
+      }
     };
   } catch (error) {
     return { status: "error", message: "Failed to fetch job logs", data: null };

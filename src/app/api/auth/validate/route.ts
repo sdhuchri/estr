@@ -19,66 +19,13 @@ export async function GET(request: NextRequest) {
     }
 
     // Mock validation - always return valid for demo
-    // const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
-
-    const response = await fetch(`${backendUrl}/estr-api/auth/validate-session`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        userid: userId,
-        userSession: userSession,
-      }),
-      signal: controller.signal,
+    // In production, this would validate against backend
+    return NextResponse.json({
+      valid: true,
+      message: "Session is valid",
     });
 
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      console.error("Backend validation failed:", response.status);
-      return NextResponse.json(
-        {
-          valid: false,
-          message: "Backend validation failed",
-        },
-        { status: 401 }
-      );
-    }
-
-    const result = await response.json();
-
-    // Check if session is valid based on backend response
-    if (result.status === "success") {
-      return NextResponse.json({
-        valid: true,
-        message: result.message || "Session is valid",
-      });
-    } else {
-      // Session invalid or expired
-      return NextResponse.json(
-        {
-          valid: false,
-          message: result.message || "Session tidak valid atau sudah kadaluarsa",
-        },
-        { status: 401 }
-      );
-    }
   } catch (error: any) {
-    if (error.name === 'AbortError') {
-      console.error("Backend validation timeout");
-      return NextResponse.json(
-        {
-          valid: false,
-          message: "Validation timeout",
-        },
-        { status: 408 }
-      );
-    }
-
     console.error("Session validation error:", error);
     return NextResponse.json(
       {

@@ -554,7 +554,7 @@ export const MOCK_LIST_REJECT_AKTIF = [
 // ==================== LAPORAN DATA ====================
 export const MOCK_LAPORAN_DATA = [
   {
-    NO: "1",
+    NO: 1,
     ID_LAPORAN: "LAP001",
     INDIKATOR: "PASSBY",
     NO_CIF: "1234567890",
@@ -626,7 +626,7 @@ export const MOCK_LAPORAN_DATA = [
     KETERLAMBATAN: "0"
   },
   {
-    NO: "3",
+    NO: 3,
     ID_LAPORAN: "LAP003",
     INDIKATOR: "BOP",
     NO_CIF: "3456789012",

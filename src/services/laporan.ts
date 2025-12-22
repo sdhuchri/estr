@@ -1,7 +1,7 @@
 import { MOCK_LAPORAN_DATA, MOCK_LAPORAN_KETERLAMBATAN, simulateDelay } from "@/data/mockData";
 
 export interface LaporanCabangData {
-  NO: number;
+  NO: number | string;
   ID_LAPORAN: string;
   INDIKATOR: string;
   NO_CIF: string;
@@ -73,7 +73,7 @@ export const getLaporanCabang = async (
 
 // ==================== LAPORAN OPR KEPATUHAN ====================
 export interface LaporanOprKepatuhanData {
-  NO: number;
+  NO: number | string;
   ID_LAPORAN: string;
   INDIKATOR: string;
   NO_CIF: string;
@@ -138,7 +138,7 @@ export const getLaporanOprKepatuhan = async (
 
 // ==================== LAPORAN SPV KEPATUHAN ====================
 export interface LaporanSpvKepatuhanData {
-  NO: number;
+  NO: number | string;
   ID_LAPORAN: string;
   INDIKATOR: string;
   NO_CIF: string;
@@ -203,7 +203,7 @@ export const getLaporanSpvKepatuhan = async (
 
 // ==================== LAPORAN REJECT ====================
 export interface LaporanRejectData {
-  NO: number;
+  NO: number | string;
   ID_LAPORAN: string;
   INDIKATOR: string;
   NO_CIF: string;
@@ -302,7 +302,7 @@ export const getLaporanReject = async (
 
 // ==================== LAPORAN ALL ====================
 export interface LaporanAllData {
-  NO: number;
+  NO: number | string;
   ID_LAPORAN: string;
   INDIKATOR: string;
   NO_CIF: string;

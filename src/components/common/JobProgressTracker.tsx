@@ -165,11 +165,12 @@ export default function JobProgressTracker() {
     
     window.addEventListener('showDemoProgress', handleDemoProgress);
     
+    // WebSocket disabled for demo - using mock data only
+    /*
     // Connect to WebSocket
     const connectWebSocket = () => {
       try {
-        // Mock WebSocket - disabled for demo
-        // const ws = new WebSocket("ws://localhost:8080/ws/job-progress");
+        const ws = new WebSocket("ws://localhost:8080/ws/job-progress");
         
         ws.onopen = () => {
           setIsConnected(true);
@@ -297,18 +298,22 @@ export default function JobProgressTracker() {
     };
 
     connectWebSocket();
+    */
 
     return () => {
       window.removeEventListener('showDemoProgress', handleDemoProgress);
       if (demoInterval) {
         clearInterval(demoInterval);
       }
+      // WebSocket cleanup disabled for demo
+      /*
       if (reconnectTimeout) {
         clearTimeout(reconnectTimeout);
       }
       if (wsRef.current) {
         wsRef.current.close();
       }
+      */
     };
   }, [shouldRender]);
 
