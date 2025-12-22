@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax" as const,
-        path: "/estr",
+        path: "/",
         maxAge: 60 * 60 * 8, // 8 hours
       };
 
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest) {
         httpOnly: false, // Allow JavaScript access
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax" as const,
-        path: "/estr", // Same path as other cookies
+        path: "/", // Same path as other cookies
         maxAge: 60 * 60 * 8, // 8 hours
       });
 

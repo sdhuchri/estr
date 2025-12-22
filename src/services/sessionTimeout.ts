@@ -66,7 +66,7 @@ export function useInactivityLogout(timeoutMinutes = 10, onLogout?: () => void) 
 
     setTimeout(() => {
       // Force hard reload to clear all state
-      window.location.href = "/estr/signin";
+      window.location.href = "/signin";
     }, 1000); // beri waktu toast tampil
   };
 

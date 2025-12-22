@@ -29,7 +29,7 @@ export async function POST() {
         httpOnly: name !== "userId_client", // userId_client is not httpOnly
         secure: process.env.NODE_ENV === "production",
         sameSite: "lax",
-        path: "/estr",
+        path: "/",
         expires: new Date(0), // Set to epoch time (past date)
       });
     });

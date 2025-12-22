@@ -115,12 +115,12 @@ export default function UserDropdown() {
       }, 100);
 
       // Force hard reload to clear all state
-      window.location.href = "/estr/signin";
+      window.location.href = "/signin";
     } catch (error) {
       console.error("Logout error:", error);
       setIsLoggingOut(false);
       // Still redirect even if logout API fails
-      window.location.href = "/estr/signin";
+      window.location.href = "/signin";
     }
   };
 

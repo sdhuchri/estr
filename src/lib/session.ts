@@ -1,7 +1,7 @@
 // Client-side session utilities
 export async function getSession() {
   try {
-    const response = await fetch("/estr/api/auth/session", {
+    const response = await fetch("/api/auth/session", {
       method: "GET",
       credentials: "include",
     });
@@ -20,7 +20,7 @@ export async function getSession() {
 
 export async function login(userid: string, password: string) {
   try {
-    const response = await fetch("/estr/api/auth/login", {
+    const response = await fetch("/api/auth/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -39,7 +39,7 @@ export async function login(userid: string, password: string) {
 
 export async function logout() {
   try {
-    const response = await fetch("/estr/api/auth/logout", {
+    const response = await fetch("/api/auth/logout", {
       method: "POST",
       credentials: "include",
       headers: {

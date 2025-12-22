@@ -95,7 +95,7 @@ export default function SettingParameterOtorisasiClient({ initialData, userId }:
         // Redirect or refresh after successful action
         setTimeout(() => {
           // window.location.reload();
-          window.location.href = "/estr/setting-parameter/otorisasi";
+          window.location.href = "/setting-parameter/otorisasi";
         }, 1500);
       } else {
         toast.current?.show({

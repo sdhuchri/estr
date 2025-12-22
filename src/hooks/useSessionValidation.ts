@@ -17,7 +17,7 @@ export function useSessionValidation(intervalSeconds = 30) {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-        const response = await fetch("/estr-api/auth/validate", {
+        const response = await fetch("/api/auth/validate", {
           method: "GET",
           credentials: "include",
           signal: controller.signal,
@@ -37,7 +37,7 @@ export function useSessionValidation(intervalSeconds = 30) {
             sessionStorage.setItem("sessionInvalidated", "true");
 
             // Redirect to signin
-            window.location.href = "/estr/signin";
+            window.location.href = "/signin";
           }
           return;
         }
@@ -54,7 +54,7 @@ export function useSessionValidation(intervalSeconds = 30) {
           sessionStorage.setItem("sessionInvalidated", "true");
 
           // Redirect to signin
-          window.location.href = "/estr/signin";
+          window.location.href = "/signin";
         } else {
           console.log("Session valid");
         }
