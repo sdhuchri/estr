@@ -9,8 +9,15 @@ export function middleware(request: NextRequest) {
   const publicPaths = ["/signin", "/signup", "/forgot-password"];
   const isPublicPath = publicPaths.some((path) => pathname.startsWith(path));
 
+  // Redirect root to signin if not authenticated, or to home if authenticated
+  if (pathname === "/") {
+    const url = request.nextUrl.clone();
+    url.pathname = userId ? "/home" : "/signin";
+    return NextResponse.redirect(url);
+  }
+
   // If user is not authenticated and trying to access protected route
-  if (!userId && !isPublicPath && pathname !== "/") {
+  if (!userId && !isPublicPath) {
     const url = request.nextUrl.clone();
     url.pathname = "/signin";
     return NextResponse.redirect(url);
@@ -36,8 +43,8 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - images (public images folder)
-     * - public folder
+     * - fonts (public fonts folder)
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|images|estr/images).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|images|fonts).*)",
   ],
 };
