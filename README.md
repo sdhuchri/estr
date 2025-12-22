@@ -1,6 +1,6 @@
 # E-STR Demo - Sistem Transaksi Mencurigakan
 
-![E-STR Demo Preview](./banner.png)
+![E-STR Demo Preview]
 
 E-STR (Electronic Suspicious Transaction Report) adalah aplikasi demo untuk sistem pelaporan dan monitoring transaksi mencurigakan. Aplikasi ini dibangun menggunakan **Next.js 16, React 19, TypeScript, dan Tailwind CSS V4**.
 
