@@ -49,45 +49,6 @@ Backend aplikasi ini telah diimplementasikan menggunakan:
 
 > **Catatan**: Versi demo ini menggunakan mock data di frontend. Backend Golang dengan Gin framework sudah diimplementasikan dan berjalan di production environment, namun tidak disertakan dalam repository demo ini untuk alasan keamanan.
 
-## 📦 Instalasi
-
-### Prasyarat
-
-Pastikan Anda telah menginstal:
-- Node.js 18.x atau lebih baru (disarankan Node.js 20.x atau lebih baru)
-- npm atau yarn
-
-### Langkah Instalasi
-
-1. Clone repository ini:
-```bash
-git clone <repository-url>
-cd <project-folder>
-```
-
-2. Install dependencies:
-```bash
-npm install
-# atau
-yarn install
-```
-
-> Gunakan flag `--legacy-peer-deps` jika mengalami error peer-dependency saat instalasi.
-
-3. Jalankan development server:
-```bash
-npm run dev
-# atau
-yarn dev
-```
-
-4. Buka browser dan akses:
-```
-http://localhost:3000/estr/signin
-```
-
-> Jika port 3000 sudah digunakan, aplikasi akan berjalan di port lain (misalnya 3001). Perhatikan output di terminal.
-
 ## 🔐 Cara Login
 
 Aplikasi ini menyediakan 2 akun demo:
@@ -96,14 +57,14 @@ Aplikasi ini menyediakan 2 akun demo:
 ```
 Username: demo
 Password: demo123
-Role: Operator Kepatuhan
+Role: Operator
 ```
 
 ### Akun Supervisor
 ```
 Username: admin
 Password: admin123
-Role: Supervisor Kepatuhan
+Role: Supervisor
 ```
 
 ### Langkah Login:
@@ -125,9 +86,9 @@ Role: Supervisor Kepatuhan
 - **Input Manual**: Input laporan transaksi manual
 - **Otorisasi**: Otorisasi transaksi oleh supervisor
 
-### 3. Manual Kepatuhan
-- **Operator Kepatuhan**: Review transaksi oleh operator
-- **Supervisor Kepatuhan**: Approval final oleh supervisor
+### 3. Manual Kantor Pusat
+- **Operator Kantor Pusat**: Review transaksi oleh operator
+- **Supervisor Kantor Pusat**: Approval final oleh supervisor
 
 ### 4. BI-Fast Transaction
 - Monitoring transaksi BI-Fast real-time
@@ -173,55 +134,18 @@ Semua data dummy tersimpan di `src/data/mockData.ts` yang mencakup:
 - Parameter settings
 - Cabang & Indikator reference data
 
-## 🔧 Konfigurasi
-
-### Base Path
-Aplikasi menggunakan base path `/estr` untuk semua route. Konfigurasi ada di `next.config.ts`:
-
-```typescript
-basePath: '/estr'
-```
-
-### Environment
-Tidak ada environment variables yang diperlukan karena aplikasi menggunakan mock data.
-
-## 🛠️ Development
-
-### Build untuk Production
-```bash
-npm run build
-# atau
-yarn build
-```
-
-### Menjalankan Production Build
-```bash
-npm run start
-# atau
-yarn start
-```
-
-### Linting
-```bash
-npm run lint
-# atau
-yarn lint
-```
-
 ## 🏗️ Arsitektur Sistem
 
 ### Versi Production (dengan Backend)
 ```
 ┌─────────────────────┐
 │   Next.js App       │ (Frontend)
-│   (Port 3000)       │
 └────────┬────────────┘
          │ HTTP/REST API
          │ WebSocket
          ▼
 ┌─────────────────────┐
 │  Golang + Gin       │ (Backend API)
-│   (Port 8080)       │
 └────────┬────────────┘
          │ SQL Queries
          ▼
@@ -234,7 +158,6 @@ yarn lint
 ```
 ┌─────────────────┐
 │   Next.js App   │ (Frontend)
-│   (Port 3000)   │
 │                 │
 │  + Mock Data    │ (src/data/mockData.ts)
 │  + API Routes   │ (Next.js API Routes)
@@ -304,7 +227,7 @@ Aplikasi ini dibuat untuk keperluan portfolio dan demo.
 
 ## 👨‍💻 Pengembang
 
-Dikembangkan sebagai portfolio project menggunakan template TailAdmin Next.js.
+Dikembangkan sebagai portfolio project.
 
 ---
 
