@@ -6,10 +6,6 @@ E-STR (Electronic Suspicious Transaction Report) adalah aplikasi demo untuk sist
 
 > **Catatan**: Ini adalah versi demo portfolio yang menggunakan data dummy. Tidak ada koneksi ke backend atau database real.
 
-# Akses Login
-User : demo
-Password : demo123
-
 ## 📋 Tentang Aplikasi
 
 E-STR Demo adalah sistem monitoring dan pelaporan transaksi mencurigakan yang mencakup:
